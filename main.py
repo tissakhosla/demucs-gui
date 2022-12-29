@@ -5,6 +5,7 @@ from flask import Flask
 from flask import render_template
 from flask import request, redirect, url_for
 from flask import send_from_directory
+from flask import flash
 from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = '/tmp/plod'
@@ -12,6 +13,7 @@ ALLOWED_EXTENSIONS = { 'wav', 'txt' }
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['SECRET_KEY'] = "a1s2d3f4g5h6j7k8l9"
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -32,10 +34,18 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('download_file', name=filename))
+            flash("The file was uploaded successfully")
+            return redirect(url_for('newpage'))
+            # return redirect(url_for('download_file', name=filename))
     return render_template('base.html')
+
+@app.route('/newpage')
+def newpage():
+    '''show fileloc template'''
+    print(os.getcwd())
+    return render_template('fileloc.html')
 
 @app.route('/uploads/<name>')
 def download_file(name):
-	'''show the server download after the client upload'''
-	return send_from_directory(app.config["UPLOAD_FOLDER"], name)
+    '''show the server download after the client upload'''
+    return send_from_directory(app.config["UPLOAD_FOLDER"], name)

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Upload new File</title>
+    <title>File Uploaded</title>
 </head>
 {% with messages = get_flashed_messages() %}
   {% if messages %}
@@ -16,6 +16,4 @@
     </ul>
   {% endif %}
 {% endwith %}
-{% block body %}{% endblock %}
-{% send_from_directory(app.config["UPLOAD_FOLDER"], name) %}
 </html>
