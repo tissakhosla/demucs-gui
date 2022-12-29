@@ -5,15 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Upload new File</title>
+    <title>{% block title %}{% endblock %} - dMuxGui</title>
 </head>
 
 <body>
-    <h1>Upload New File 3</h1>
-    <form method=post enctype=multipart/form-data>
-        <input type=file name=file>
-        <input type=submit value=Upload>
-    </form>
+    {% block body %}{% endblock %}
 </body>
 
 </html>

@@ -1,6 +1,5 @@
 '''runs hello'''
 import os
-import logging
 from flask import Flask
 from flask import render_template
 from flask import request, redirect, url_for
@@ -19,7 +18,11 @@ def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.',1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route("/", methods=['GET', 'POST'])
+@app.route("/")
+def to_upload():
+    return redirect('/upload')
+
+@app.route("/upload", methods=['GET', 'POST'])
 def upload_file():
     '''main route'''
     if request.method == 'POST':
@@ -37,7 +40,7 @@ def upload_file():
             flash("The file was uploaded successfully")
             return redirect(url_for('newpage'))
             # return redirect(url_for('download_file', name=filename))
-    return render_template('base.html')
+    return render_template('upload.html')
 
 @app.route('/newpage')
 def newpage():
