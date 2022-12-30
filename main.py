@@ -1,11 +1,13 @@
 '''runs hello'''
 import os
+import smtplib
 from flask import Flask
 from flask import render_template
 from flask import request, redirect, url_for
-# from flask import send_from_directory
+from flask import send_from_directory
 from flask import flash
 from werkzeug.utils import secure_filename
+
 
 UPLOAD_FOLDER = '/tmp/plod'
 ALLOWED_EXTENSIONS = { 'wav', 'txt' }
@@ -18,8 +20,26 @@ def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.',1)[1].lower() in ALLOWED_EXTENSIONS
 
-def topfile():
-    print("monkeys uncle")
+def email(fn):
+    '''send email'''
+    # Set up the SMTP server
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+
+    # Login to the email account
+    # TODO: move to env
+    me = 'tissa.music@gmail.com'
+    server.login(me, 'zfjqkwrmmnghxzgv')
+    # Send the email
+
+    to = ['tissa@finityllc.com']
+    subject = 'testing python email'
+    body = f'the file uploaded is called {fn}.'
+    msg = f'Subject: {subject}\n\n{body}'
+    server.sendmail(me, to, msg)
+
+    # Disconnect from the server
+    server.quit()
 
 @app.route("/")
 def to_upload():
@@ -40,20 +60,30 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            flash(f'{filename} was uploaded successfully')
+            flash(f'{filename} was uploaded successfully. \
+                \n You will receive an email when files are ready.')
 
             return redirect(url_for('success', name=filename))
     return render_template('upload.html')
 
-@app.route('/uploads/<name>')
+@app.route('/<name>-success')
 def success(name):
-    '''show the server download after the client upload'''
+    '''show success after processing'''
     os.system('ls -al /tmp/plod')
     print('--------------------')
     os.system(f'ls /tmp/plod/{name}')
     os.system(f'demucs /tmp/plod/{name}')
+    email(name)
     return render_template('fileloc.html')
 
-# TODO: what is this doing: send_from_directory(app.config["UPLOAD_FOLDER"], name)
-# TODO: send_from_directory(app.config["UPLOAD_FOLDER"], name)
+@app.route('/static/<path:dirname>')
+def serve_static(dirname):
+    return send_from_directory('static', dirname)
+
+# TODO: step 1 - serve any specified directory
+# TODO: step 2 - serve the directory created by demucs
+# TODO: step 3 - send myself the email ( this I already have working )
+# TODO: step 4 - put the links to the new directories in there
+# TODO: step 5 - have the user put in their email
+
 # TODO: when in the return it just sends us to the file
