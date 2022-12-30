@@ -55,7 +55,7 @@ def upload_file():
         file = request.files['file']
         print(request)
         if file.filename == '':
-            # flash('no selected file')
+            flash('no selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
@@ -74,7 +74,7 @@ def success(name):
     os.system(f'ls /tmp/plod/{name}')
     os.system(f'demucs /tmp/plod/{name}')
     email(name)
-    return render_template('fileloc.html')
+    return render_template('success.html')
 
 @app.route('/static/<path:dirname>')
 def serve_static(dirname):
