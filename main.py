@@ -25,6 +25,10 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SECRET_KEY'] = os.urandom(12)
 
+assert os.getenv('G_SMTP')
+assert os.getenv('G_MAIL')
+assert os.getenv('G_KEY')
+
 def demucs(wav, em):
     os.system(f'demucs /tmp/plod/{wav}')
     email(wav, em)
@@ -37,13 +41,13 @@ def email(c, e):
     '''send email'''
     # Set up the SMTP server
     # TODO: move smtp server to env
-    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server = smtplib.SMTP(os.getenv('G_SMTP'), 587)
     server.starttls()
 
     # Login to the email account
-    # TODO: move these to env
-    me = 'tissa.music@gmail.com'
-    server.login(me, 'zfjqkwrmmnghxzgv')
+    me = os.getenv('G_MAIL')
+    server.login(me, os.getenv('G_KEY'))
+
     # Send the email
     logging.info(' > to: %s', e)
     to = [e]
@@ -66,7 +70,7 @@ def to_upload():
 @app.route("/upload", methods=['GET', 'POST'])
 def upload_file():
     '''main route'''
-    logging.info('START: a wild user has appeared')
+    logging.info(' START: a wild user has appeared')
     if request.method == 'POST':
         useremail = request.form['email']
 
@@ -107,12 +111,9 @@ def success(cn):
 def serve_static(filename):
     return send_from_directory('separated', filename)
 
-# TODO: get user email from frontend
-# TODO: put gmail key and my personal email in ENV
+# TODO: don't use flash, pass the variables into render_template
 # TODO: use demucs module within python
 # TODO: create a helper class for all the functions
 # TODO: routes can live here
-# TODO: send all requests to admins
 # TODO: https://flask.palletsprojects.com/en/2.2.x/logging/#email-errors-to-admins
-# TODO: don't use flash, pass the variables into render_template
 # TODO: create new email to handle all this
