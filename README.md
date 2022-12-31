@@ -1,4 +1,4 @@
-## Browser GUI for [DEMUCS](https://github.com/facebookresearch/demucs)
+## Browser GUI for [DEMUCS](https://github.com/facebookresearch/demucs) v1.0
 
 ### SETUP Instructions to run on a server
 
