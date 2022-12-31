@@ -9,7 +9,6 @@
 1. clone from github
 1. create env
 1. pip install flask and demucs
-1. set ENV Variables
 1. start screen
 1. in one `flask --app main run` or
 1. `flask --app main --debug run`

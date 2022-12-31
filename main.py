@@ -10,15 +10,15 @@ import logging
 from threading import Thread
 
 from flask import (
-    Flask, render_template, request,redirect,
-    url_for, send_from_directory, flash
+    Flask, render_template, request,
+    redirect, url_for, send_from_directory
 )
 
 from werkzeug.utils import secure_filename
 
 logging.basicConfig(level=logging.INFO)
 
-UPLOAD_FOLDER = '/tmp/plod'
+UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = { 'wav' }
 
 app = Flask(__name__)
@@ -29,15 +29,15 @@ assert os.getenv('G_SMTP')
 assert os.getenv('G_MAIL')
 assert os.getenv('G_KEY')
 
-def demucs(wav, em):
-    os.system(f'demucs /tmp/plod/{wav}')
-    email(wav, em)
+def demucs(wav, f, em, url):
+    os.system(f'demucs /tmp/{wav}')
+    email(wav, f, em, url)
 
 def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.',1)[1].lower() in ALLOWED_EXTENSIONS
 
-def email(c, e):
+def email(c, f, e, u):
     '''send email'''
     # Set up the SMTP server
     # TODO: move smtp server to env
@@ -48,15 +48,17 @@ def email(c, e):
     me = os.getenv('G_MAIL')
     server.login(me, os.getenv('G_KEY'))
 
-    # Send the email
     logging.info(' > to: %s', e)
+    # Build the email
     to = [e]
-    subject = 'testing python email'
-    body = f'Here are the links: \
-        \n http://127.0.0.1:5000/separated/htdemucs/{c}/bass.wav \
-        \n http://127.0.0.1:5000/separated/htdemucs/{c}/drums.wav \
-        \n http://127.0.0.1:5000/separated/htdemucs/{c}/other.wav \
-        \n http://127.0.0.1:5000/separated/htdemucs/{c}/vocals.wav'
+    subject = f'{f} Split Tracks'
+
+    body = f'Here are the links your files: \
+        \n\n http://{u}/separated/htdemucs/{c}/bass.wav \
+        \n http://{u}/separated/htdemucs/{c}/drums.wav \
+        \n http://{u}/separated/htdemucs/{c}/other.wav \
+        \n http://{u}/separated/htdemucs/{c}/vocals.wav'
+
     msg = f'Subject: {subject}\n\n{body}'
     server.sendmail(me, to, msg)
 
@@ -71,16 +73,16 @@ def to_upload():
 def upload_file():
     '''main route'''
     logging.info(' START: a wild user has appeared')
+    logging.info(' SERVER: %s', request.host)
     if request.method == 'POST':
-        useremail = request.form['email']
 
         if 'file' not in request.files:
             return redirect(request.url)
 
         file = request.files['file']
+        useremail = request.form['email']
 
         if file.filename == '':
-            flash('no selected file')
             return redirect(request.url)
 
         if file and allowed_file(file.filename):
@@ -92,28 +94,26 @@ def upload_file():
             file.seek(0)
             codename = str(uuid.uuid4())
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], codename))
-
-            flash(f'{filename} uploaded successfully.')
-            flash('You will receive an email when processing is complete')
-            return redirect(url_for('success', cn=codename, ue=useremail))
+            return redirect(url_for('success', cn=codename, fn=filename, ue=useremail))
     return render_template('upload.html')
 
 @app.route('/success-<cn>')
 def success(cn):
     '''show success after processing'''
-    os.system(f'ls /tmp/plod/{cn}')
+    os.system(f'ls /tmp/{cn}')
     ue = request.args.get('ue')
-    _demucs = Thread(target=demucs, args=(cn, ue))
+    fn = request.args.get('fn')
+    _demucs = Thread(target=demucs, args=(cn, fn, ue, request.host))
     _demucs.start()
-    return render_template('success.html')
+    return render_template('success.html', ue=ue, fn=fn)
 
 @app.route('/separated/<path:filename>')
 def serve_static(filename):
     return send_from_directory('separated', filename)
 
-# TODO: don't use flash, pass the variables into render_template
 # TODO: use demucs module within python
 # TODO: create a helper class for all the functions
 # TODO: routes can live here
 # TODO: https://flask.palletsprojects.com/en/2.2.x/logging/#email-errors-to-admins
-# TODO: create new email to handle all this
+# TODO: create new email address to handle all this
+# TODO: add <♩♩♩♩/> and make it an HTML email
