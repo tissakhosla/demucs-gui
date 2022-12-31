@@ -9,11 +9,11 @@ import uuid
 import logging
 from threading import Thread
 
-from flask import Flask
-from flask import render_template
-from flask import request, redirect, url_for
-from flask import send_from_directory
-from flask import flash
+from flask import (
+    Flask, render_template, request,redirect,
+    url_for, send_from_directory, flash
+)
+
 from werkzeug.utils import secure_filename
 
 logging.basicConfig(level=logging.INFO)
@@ -25,15 +25,15 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SECRET_KEY'] = os.urandom(12)
 
-def demucs(wav):
+def demucs(wav, em):
     os.system(f'demucs /tmp/plod/{wav}')
-    email(wav)
+    email(wav, em)
 
 def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.',1)[1].lower() in ALLOWED_EXTENSIONS
 
-def email(c):
+def email(c, e):
     '''send email'''
     # Set up the SMTP server
     # TODO: move smtp server to env
@@ -45,7 +45,8 @@ def email(c):
     me = 'tissa.music@gmail.com'
     server.login(me, 'zfjqkwrmmnghxzgv')
     # Send the email
-    to = ['tissa@finityllc.com']
+    logging.info(' > to: %s', e)
+    to = [e]
     subject = 'testing python email'
     body = f'Here are the links: \
         \n http://127.0.0.1:5000/separated/htdemucs/{c}/bass.wav \
@@ -65,9 +66,9 @@ def to_upload():
 @app.route("/upload", methods=['GET', 'POST'])
 def upload_file():
     '''main route'''
+    logging.info('START: a wild user has appeared')
     if request.method == 'POST':
-        userE = request.form['email']
-        logging.info(' < user: %s', userE)
+        useremail = request.form['email']
 
         if 'file' not in request.files:
             return redirect(request.url)
@@ -90,14 +91,15 @@ def upload_file():
 
             flash(f'{filename} uploaded successfully.')
             flash('You will receive an email when processing is complete')
-            return redirect(url_for('success', cn=codename))
+            return redirect(url_for('success', cn=codename, ue=useremail))
     return render_template('upload.html')
 
 @app.route('/success-<cn>')
 def success(cn):
     '''show success after processing'''
     os.system(f'ls /tmp/plod/{cn}')
-    _demucs = Thread(target=demucs, args=(cn,))
+    ue = request.args.get('ue')
+    _demucs = Thread(target=demucs, args=(cn, ue))
     _demucs.start()
     return render_template('success.html')
 
@@ -113,3 +115,4 @@ def serve_static(filename):
 # TODO: send all requests to admins
 # TODO: https://flask.palletsprojects.com/en/2.2.x/logging/#email-errors-to-admins
 # TODO: don't use flash, pass the variables into render_template
+# TODO: create new email to handle all this
