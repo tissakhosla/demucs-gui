@@ -6,7 +6,7 @@ On success, we will send the user an email
 import os
 import smtplib
 import uuid
-# import threading
+import threading
 
 from flask import Flask
 from flask import render_template
@@ -17,11 +17,14 @@ from werkzeug.utils import secure_filename
 
 
 UPLOAD_FOLDER = '/tmp/plod'
-ALLOWED_EXTENSIONS = { 'wav', 'txt' }
+ALLOWED_EXTENSIONS = { 'wav' }
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SECRET_KEY'] = "a1s2d3f4g5h6j7k8l9"
+
+def demucs(wav):
+    os.system(f'demucs /tmp/plod/{wav}')
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -78,11 +81,8 @@ def upload_file():
 @app.route('/success-<cn>')
 def success(cn):
     '''show success after processing'''
-    print(cn)
-    os.system('ls -al /tmp/plod')
-    print('--------------------')
     os.system(f'ls /tmp/plod/{cn}')
-    os.system(f'demucs /tmp/plod/{cn}')
+    demucs(cn)
     email(cn)
     return render_template('success.html')
 
@@ -96,3 +96,4 @@ def serve_static(filename):
 # thread places a marker when complete
 # listener sends an email when the marker is present
 # listener deletes the marker
+# clear flashes?
