@@ -1,6 +1,13 @@
-'''runs hello'''
+'''
+A user can upload a file
+Demucs will split it
+On success, we will send the user an email
+'''
 import os
 import smtplib
+import uuid
+# import threading
+
 from flask import Flask
 from flask import render_template
 from flask import request, redirect, url_for
@@ -20,7 +27,7 @@ def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.',1)[1].lower() in ALLOWED_EXTENSIONS
 
-def email(fn):
+def email(c):
     '''send email'''
     # Set up the SMTP server
     server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -34,7 +41,11 @@ def email(fn):
 
     to = ['tissa@finityllc.com']
     subject = 'testing python email'
-    body = f'the file uploaded is called {fn}.'
+    body = f'Here are the links: \
+        \n http://127.0.0.1:5000/separated/htdemucs/{c}/bass.wav \
+        \n http://127.0.0.1:5000/separated/htdemucs/{c}/drums.wav \
+        \n http://127.0.0.1:5000/separated/htdemucs/{c}/other.wav \
+        \n http://127.0.0.1:5000/separated/htdemucs/{c}/vocals.wav'
     msg = f'Subject: {subject}\n\n{body}'
     server.sendmail(me, to, msg)
 
@@ -50,40 +61,38 @@ def upload_file():
     '''main route'''
     if request.method == 'POST':
         if 'file' not in request.files:
-            # flash('no file part')
             return redirect(request.url)
         file = request.files['file']
-        print(request)
         if file.filename == '':
             flash('no selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            flash(f'{filename} was uploaded successfully. \
-                \n You will receive an email when files are ready.')
-
-            return redirect(url_for('success', name=filename))
+            codename = str(uuid.uuid4())
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], codename))
+            flash(f'{filename} split successfully')
+            flash('Check your email')
+            return redirect(url_for('success', cn=codename))
     return render_template('upload.html')
 
-@app.route('/<name>-success')
-def success(name):
+@app.route('/success-<cn>')
+def success(cn):
     '''show success after processing'''
+    print(cn)
     os.system('ls -al /tmp/plod')
     print('--------------------')
-    os.system(f'ls /tmp/plod/{name}')
-    os.system(f'demucs /tmp/plod/{name}')
-    email(name)
+    os.system(f'ls /tmp/plod/{cn}')
+    os.system(f'demucs /tmp/plod/{cn}')
+    email(cn)
     return render_template('success.html')
 
-@app.route('/static/<path:dirname>')
-def serve_static(dirname):
-    return send_from_directory('static', dirname)
+@app.route('/separated/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('separated', filename)
 
-# TODO: step 1 - serve any specified directory
-# TODO: step 2 - serve the directory created by demucs
-# TODO: step 3 - send myself the email ( this I already have working )
-# TODO: step 4 - put the links to the new directories in there
-# TODO: step 5 - have the user put in their email
+# maintain state in flask
 
-# TODO: when in the return it just sends us to the file
+# start the demucs in a separate thread
+# thread places a marker when complete
+# listener sends an email when the marker is present
+# listener deletes the marker
