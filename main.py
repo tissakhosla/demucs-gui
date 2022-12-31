@@ -6,6 +6,7 @@ On success, we will send the user an email
 import os
 import smtplib
 import uuid
+import logging
 from threading import Thread
 
 from flask import Flask
@@ -15,6 +16,7 @@ from flask import send_from_directory
 from flask import flash
 from werkzeug.utils import secure_filename
 
+logging.basicConfig(level=logging.INFO)
 
 UPLOAD_FOLDER = '/tmp/plod'
 ALLOWED_EXTENSIONS = { 'wav' }
@@ -32,19 +34,17 @@ def allowed_file(filename):
         filename.rsplit('.',1)[1].lower() in ALLOWED_EXTENSIONS
 
 def email(c):
-    '''send email when ready'''
-
+    '''send email'''
     # Set up the SMTP server
+    # TODO: move smtp server to env
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
 
     # Login to the email account
-    # TODO: move to env
+    # TODO: move these to env
     me = 'tissa.music@gmail.com'
     server.login(me, 'zfjqkwrmmnghxzgv')
     # Send the email
-
-    # TODO: receive users email from frontend
     to = ['tissa@finityllc.com']
     subject = 'testing python email'
     body = f'Here are the links: \
@@ -66,16 +66,28 @@ def to_upload():
 def upload_file():
     '''main route'''
     if request.method == 'POST':
+        userE = request.form['email']
+        logging.info(' < user: %s', userE)
+
         if 'file' not in request.files:
             return redirect(request.url)
+
         file = request.files['file']
+
         if file.filename == '':
             flash('no selected file')
             return redirect(request.url)
+
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
+
+            logging.info(' < file: %s', filename)
+            logging.info(' < type: %s', file.content_type)
+            logging.info(' < size: %s bytes', len(file.read()))
+            file.seek(0)
             codename = str(uuid.uuid4())
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], codename))
+
             flash(f'{filename} uploaded successfully.')
             flash('You will receive an email when processing is complete')
             return redirect(url_for('success', cn=codename))
@@ -85,8 +97,8 @@ def upload_file():
 def success(cn):
     '''show success after processing'''
     os.system(f'ls /tmp/plod/{cn}')
-    dmuxThread = Thread(target=demucs, args=(cn,))
-    dmuxThread.start()
+    _demucs = Thread(target=demucs, args=(cn,))
+    _demucs.start()
     return render_template('success.html')
 
 @app.route('/separated/<path:filename>')
@@ -98,3 +110,6 @@ def serve_static(filename):
 # TODO: use demucs module within python
 # TODO: create a helper class for all the functions
 # TODO: routes can live here
+# TODO: send all requests to admins
+# TODO: https://flask.palletsprojects.com/en/2.2.x/logging/#email-errors-to-admins
+# TODO: don't use flash, pass the variables into render_template
