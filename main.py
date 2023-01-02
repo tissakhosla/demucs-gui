@@ -7,6 +7,8 @@ import os
 import smtplib
 import uuid
 import logging
+import sqlite3
+from datetime import datetime
 from threading import Thread
 
 from flask import (
@@ -16,7 +18,16 @@ from flask import (
 
 from werkzeug.utils import secure_filename
 
+# setup logging
 logging.basicConfig(level=logging.INFO)
+
+# initialize db
+TBL = 'track'
+con = sqlite3.connect("tracks.db", check_same_thread=False)
+cur = con.cursor()
+trackTable = f'CREATE TABLE IF NOT EXISTS  \
+            {TBL}(title, timestamp, user, code)'
+cur.execute(trackTable)
 
 UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = { 'wav' }
@@ -29,8 +40,21 @@ assert os.getenv('G_SMTP')
 assert os.getenv('G_MAIL')
 assert os.getenv('G_KEY')
 
+def insert(fn, ts, ue, cn):
+    '''insert track data into db'''
+    sqlcmd = f"INSERT into {TBL} VALUES \
+    ('{fn}', {ts}, '{ue}', '{cn}')"
+    logging.info(' < SQLCMD: %s', sqlcmd)
+    cur.execute(sqlcmd)
+    con.commit()
+
+def utime():
+    '''create timestamp when called'''
+    dt = datetime.now()
+    print(dt)
+    return datetime.timestamp(dt)
+
 def demucs(wav, f, em, url):
-    # TODO: starttime = datetime.now()
     os.system(f'demucs /tmp/{wav}')
     email(wav, f, em, url)
 
@@ -40,7 +64,6 @@ def allowed_file(filename):
 
 def email(c, f, e, u):
     '''send email'''
-    # TODO: endtime = datetime.now()
     # Set up the SMTP server
     server = smtplib.SMTP(os.getenv('G_SMTP'), 587)
     server.starttls()
@@ -68,6 +91,7 @@ def email(c, f, e, u):
 
 @app.route("/")
 def to_upload():
+    print(utime())
     return redirect('/upload')
 
 @app.route("/upload", methods=['GET', 'POST'])
@@ -95,6 +119,9 @@ def upload_file():
             file.seek(0)
             codename = str(uuid.uuid4())
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], codename))
+
+            insert(filename, utime(), useremail, codename)
+
             return redirect(url_for('success', cn=codename, fn=filename, ue=useremail))
     return render_template('upload.html')
 
@@ -105,7 +132,7 @@ def success(cn):
     ue = request.args.get('ue')
     fn = request.args.get('fn')
     _demucs = Thread(target=demucs, args=(cn, fn, ue, request.host))
-    _demucs.start()
+    # _demucs.start()
     return render_template('success.html', ue=ue, fn=fn)
 
 @app.route('/separated/<path:filename>')
@@ -114,6 +141,7 @@ def serve_static(filename):
 
 
 # TODO: use sqlite3
+# TODO: get better variable names throughout
 # TODO: add start time and end time to job
 # TODO: use flask-session to keep state
 # TODO: get a smaller reserved instance
