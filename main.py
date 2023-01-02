@@ -111,16 +111,16 @@ def success(cn):
 def serve_static(filename):
     return send_from_directory('separated', filename)
 
-# TODO: in PRD the path is 'separated/mdx_extra_q/etc.'
 # TODO: use demucs module within python see ../notes/openai
-# TODO: if I update demucs in PRD, it'll use the new one
-# TODO: we will need options on the GUI
-# TODO: create a helper class for all the functions
+# TODO: create a helper class for all the functions that aren't routes
 # TODO: routes can live here
-# TODO: https://flask.palletsprojects.com/en/2.2.x/logging/#email-errors-to-admins
+# TODO: if I update demucs in PRD, it'll use the new one
+# TODO: in PRD the path is 'separated/mdx_extra_q/...'
+# TODO: we will need options on the GUI once we use the new update
 # TODO: create new email address to handle all this
-# TODO: add <♩♩♩♩/> and make it an HTML email
-# TODO: space is gonna be an issue very soon on PRD
-# TODO: Make the frontend pretty (CSS)
 # TODO: Use Official LTS Ubuntu Linux for ec2
+# TODO: space is gonna be an issue very soon on PRD
+# TODO: add <♩♩♩♩/> and make it an HTML email
+# TODO: https://flask.palletsprojects.com/en/2.2.x/logging/#email-errors-to-admins
 # TODO: Get DNS
+# TODO: Make the frontend pretty (CSS)
