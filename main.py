@@ -30,6 +30,7 @@ assert os.getenv('G_MAIL')
 assert os.getenv('G_KEY')
 
 def demucs(wav, f, em, url):
+    # TODO: starttime = datetime.now()
     os.system(f'demucs /tmp/{wav}')
     email(wav, f, em, url)
 
@@ -39,8 +40,8 @@ def allowed_file(filename):
 
 def email(c, f, e, u):
     '''send email'''
+    # TODO: endtime = datetime.now()
     # Set up the SMTP server
-    # TODO: move smtp server to env
     server = smtplib.SMTP(os.getenv('G_SMTP'), 587)
     server.starttls()
 
@@ -111,16 +112,18 @@ def success(cn):
 def serve_static(filename):
     return send_from_directory('separated', filename)
 
-# TODO: use demucs module within python see ../notes/openai
-# TODO: create a helper class for all the functions that aren't routes
-# TODO: routes can live here
+
+# TODO: use sqlite3
+# TODO: add start time and end time to job
+# TODO: use flask-session to keep state
+# TODO: get a smaller reserved instance
+# TODO: enlarge the disk and extend the fs
 # TODO: if I update demucs in PRD, it'll use the new one
 # TODO: in PRD the path is 'separated/mdx_extra_q/...'
 # TODO: we will need options on the GUI once we use the new update
 # TODO: create new email address to handle all this
 # TODO: Use Official LTS Ubuntu Linux for ec2
-# TODO: space is gonna be an issue very soon on PRD
-# TODO: add <♩♩♩♩/> and make it an HTML email
+# TODO: <♩♩♩♩/> and make it an HTML email
 # TODO: https://flask.palletsprojects.com/en/2.2.x/logging/#email-errors-to-admins
 # TODO: Get DNS
 # TODO: Make the frontend pretty (CSS)
