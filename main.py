@@ -202,6 +202,7 @@ def success(cn):
     fn = request.args.get('fn')
 
     if check_status('D'):
+        # oops D is done and the file no longer there?!
         db_insert(fn, utime(), ue, cn, 'W')
     else:
         db_insert(fn, utime(), ue, cn, 'N')
@@ -217,9 +218,17 @@ def serve_static(filename):
 
 
 
-# TODO: get better variable names throughout
+# TODO: State Machine - N, W, D, E(liminated)
+# TODO: clean up all the code - make 2 helper classes
+# TODO: cn in the db should be defined as a unique key
+# TODO: use unique increment field instead UNIX time
+# TODO: atomic database push and pop
+# TODO: 2 db ops insert, delete
+# TODO: infinite loop module to demucs topfile
+
+# TODO: sqlite transaction call
 # TODO: add start time and end time to job
-# TODO: use flask-session to keep state
+
 # TODO: get a smaller reserved instance
 # TODO: enlarge the disk and extend the fs
 # TODO: if I update demucs in PRD, it'll use the new one
