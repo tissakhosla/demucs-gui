@@ -80,7 +80,7 @@ def email(uid, fn, em, ip):
     server.quit()
 
 def demucs(path):
-    os.system(f'echo {path} > ~/demucs/demucs-gui/fpipe')
+    os.system(f'echo {path} > fpipe')
 
 def process(path, code, trackname, uemail, hostip):
     demucs(path)
@@ -153,7 +153,9 @@ def serve_static(filename):
     return send_from_directory('separated', filename)
 
 
-# TODO: add license
+
+# TODO: test emails in PRD
+# TODO: re-initialize system and instance
 # TODO: add start time and end time to job
 # TODO: get a smaller reserved instance
 # TODO: enlarge the disk and extend the fs
