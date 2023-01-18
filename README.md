@@ -13,7 +13,7 @@
 1. add necessary env attributes
 1. `mkdir /tmp/uploads`
 1. `mkfifo fpipe`
-1. start screen
+1. `screen`
 1. in one `flask --app main run` or
 1. `flask --app main --debug run` or
 1. `flask --app main --debug run --host=0.0.0.0` in PRD
