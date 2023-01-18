@@ -9,11 +9,10 @@
 1. `python3 -m pip list`
 1. `python3 -m pip install --upgrade pip` if needed
 1. `cd demucs-gui`
-1. pip install flask and demucs
+1. `pip install -r requirements.txt`
 1. add necessary env attributes
 1. `mkdir /tmp/uploads`
 1. `mkfifo fpipe`
-1. activate env
 1. start screen
 1. in one `flask --app main run` or
 1. `flask --app main --debug run` or

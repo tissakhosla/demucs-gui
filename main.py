@@ -68,10 +68,10 @@ def email(uid, fn, em, ip):
     subject = f'{fn} Split Tracks'
 
     body = f'Here are the links your files: \
-        \n\n http://{ip}/separated/mdx_extra_q/{uid}/bass.wav \
-        \n http://{ip}/separated/mdx_extra_q/{uid}/drums.wav \
-        \n http://{ip}/separated/mdx_extra_q/{uid}/other.wav \
-        \n http://{ip}/separated/mdx_extra_q/{uid}/vocals.wav'
+        \n\n http://{ip}/separated/htdemucs_ft/{uid}/bass.wav \
+        \n http://{ip}/separated/htdemucs_ft/{uid}/drums.wav \
+        \n http://{ip}/separated/htdemucs_ft/{uid}/other.wav \
+        \n http://{ip}/separated/htdemucs_ft/{uid}/vocals.wav'
 
     msg = f'Subject: {subject}\n\n{body}'
     server.sendmail(me, to, msg)
