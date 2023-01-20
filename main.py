@@ -3,19 +3,14 @@ A user can upload a file
 Demucs will split it
 On success, we will send the user an email
 '''
+
 import os
 import smtplib
 import uuid
 import logging
-import sqlite3
 
 from datetime import datetime
 from threading import Thread
-
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
-
-
 from flask import (
     Flask, render_template, request,
     redirect, url_for, send_from_directory
@@ -40,8 +35,6 @@ app.config['SECRET_KEY'] = os.urandom(12)
 assert os.getenv('G_SMTP')
 assert os.getenv('G_MAIL')
 assert os.getenv('G_KEY')
-
-# TODO: App functions - Make into util class
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -130,7 +123,7 @@ def upload_file():
                 fp=filepath,
                 cn=codename,
                 fn=filename,
-                ue=useremail, 
+                ue=useremail,
                 sip=server_ip))
     return render_template('upload.html')
 
@@ -151,22 +144,3 @@ def success():
 @app.route('/separated/<path:filename>')
 def serve_static(filename):
     return send_from_directory('separated', filename)
-
-
-
-# TODO: test emails in PRD
-# TODO: re-initialize system and instance
-# TODO: add start time and end time to job
-# TODO: get a smaller reserved instance
-# TODO: enlarge the disk and extend the fs
-# TODO: if I update demucs in PRD, it'll use the new one
-# TODO: in PRD the path is 'separated/mdx_extra_q/...'
-# TODO: create new email address to handle all this
-# TODO: Use Official LTS Ubuntu Linux for ec2
-# TODO: <♩♩♩♩/> and make it an HTML email
-# TODO: https://flask.palletsprojects.com/en/2.2.x/logging/#email-errors-to-admins
-# TODO: Get DNS
-# TODO: Make the frontend pretty (CSS)
-# TODO: cron removal of separated tracks once a week
-# TODO: confirm when /tmp/ is emptied
-# TODO: don't use flask built in server in PRD
