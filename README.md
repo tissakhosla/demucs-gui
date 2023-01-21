@@ -4,10 +4,13 @@
 
 ### On an new instance
 1. Create a new instance of latest Ubuntu build.
+    - Ideally t3.2xlarge - 32GiB Memory - 8vCPUs
+    - ubuntu image
+    - use security group 1 (ports 22 and 5000)
+    - 64 gb
 1. Allocate an Elastic IP.
 1. Associate the IP with the new Instance.
 1. Use existing key pair or create new one.
-1. Security group should allow SSH and port 5000.
 1. `vi .ssh/config`
 1. Add the following to it:
 ```
@@ -16,9 +19,11 @@ Host <DEMUCS_INSTANCE>
         IdentityFile /path/to/key.cer
         User ubuntu
 ```
-8. `ssh <DEMUCS_INSTANCE>`
-1. `rsync -nav .ssh/<GITHUB_KEY> <DEMUCS_INSTANCE>:/home/ubuntu/.ssh`
-1. `rsync -av .ssh/<GITHUB_KEY> <DEMUCS_INSTANCE>:/home/ubuntu/.ssh`
+7. `ssh <DEMUCS_INSTANCE>`
+1. In a separate terminal window
+    - `rsync -nav .ssh/<GITHUB_KEY> <DEMUCS_INSTANCE>:/home/ubuntu/.ssh`
+    - `rsync -av .ssh/<GITHUB_KEY> <DEMUCS_INSTANCE>:/home/ubuntu/.ssh`
+1. Back to SSH Terminal
 1. `touch .ssh/config`
 1. `vi .ssh/config`
 1. Add the following to it:
@@ -27,11 +32,12 @@ Host github.com
     IdentityFile /home/ubuntu/.ssh/<GITHUB_KEY>
     User git
 ```
-14. `sudo apt dist-upgrade`
+13. `sudo apt dist-upgrade`
 1. `sudo apt update`
 1. `apt list --upgradeable`
 1. `sudo apt upgrade`
-1. `apt install python3-venv`
+1. `sudo apt install ffmpeg`
+1. `sudo apt install python3-venv`
 1. `mkdir envs`
 1. `python3 -m venv envs/<ENVNAME>`
 1. `git clone git@github.com:tissakhosla/demucs-gui.git`
@@ -62,3 +68,6 @@ Host github.com
 - upload completed files to S3 bucket so that they can get it even if demucs server is off
 - don't use flask built in server in PRD
 - make separate class for functions, so routes are in one place, methods in another. 
+- send a zip file for download?
+- SSL
+- Figure out cost spread w Sukhi
