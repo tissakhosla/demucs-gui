@@ -65,7 +65,7 @@ Host github.com
 -  Make the frontend pretty (CSS)
 - <♩♩♩♩/> and make it an HTML email
 - cron removal of separated tracks once a week
-- upload completed files to S3 bucket so that they can get it even if demucs server is off
+- upload completed files to S3 with [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
 - don't use flask built in server in PRD
 - make separate class for functions, so routes are in one place, methods in another. 
 - send a zip file for download?
