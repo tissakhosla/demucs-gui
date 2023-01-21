@@ -24,7 +24,7 @@ logging.basicConfig(level=logging.INFO)
 # initialize Flask App
 
 UPLOAD_FOLDER = '/tmp/uploads'
-ALLOWED_EXTENSIONS = { 'wav' }
+ALLOWED_EXTENSIONS = { 'wav', 'mp3' }
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -125,6 +125,7 @@ def upload_file():
                 fn=filename,
                 ue=useremail,
                 sip=server_ip))
+
     return render_template('upload.html')
 
 @app.route('/success')

@@ -58,8 +58,9 @@ Host github.com
 
 ### Updates needed
 - use LARGE instance... I think it's definitely faster
-- add frontend radio buttons to select which model we want to use
-- add mp3 support
+- add frontend radio buttons
+    - add support to export mp3s
+    - add support to use other models
 - create new email address to handle all this
 - Get DNS
 -  Make the frontend pretty (CSS)
