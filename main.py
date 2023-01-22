@@ -168,3 +168,7 @@ def serve_static(filename):
 @app.route('/help')
 def help():
     return render_template('help.html')
+
+@app.route('/license')
+def license():
+    return render_template('license.html')
