@@ -55,7 +55,6 @@ def email(uid, fn, em, ip):
     me = os.getenv('G_MAIL')
     server.login(me, os.getenv('G_KEY'))
 
-    logging.info(' > to: %s', em)
     # Build the email
     to = [em]
     subject = f'{fn} Split Tracks'
@@ -69,14 +68,16 @@ def email(uid, fn, em, ip):
     msg = f'Subject: {subject}\n\n{body}'
     server.sendmail(me, to, msg)
 
-    # Disconnect from the server
+    logging.info(' > to: %s', em)
     server.quit()
 
-def demucs(path):
+def demucs(p, m):
+    print(p)
+    print(m)
     os.system(f'echo {path} > fpipe')
 
-def process(path, code, trackname, uemail, hostip):
-    demucs(path)
+def process(path, code, trackname, uemail, hostip, model):
+    demucs(path, model)
     email(code, trackname, uemail, hostip)
 
 @app.route("/")
@@ -100,6 +101,7 @@ def upload_file():
 
         file = request.files['file']
         useremail = request.form['email']
+        demucsmodel = request.form['model']
 
         if file.filename == '':
             return redirect(request.url)
@@ -124,7 +126,8 @@ def upload_file():
                 cn=codename,
                 fn=filename,
                 ue=useremail,
-                sip=server_ip))
+                sip=server_ip,
+                dm=demucsmodel))
 
     return render_template('upload.html')
 
@@ -136,8 +139,8 @@ def success():
     fn = request.args.get('fn')
     ue = request.args.get('ue')
     sip = request.args.get('sip')
-
-    _process = Thread(target=process, args=(fp, cn, fn, ue, sip))
+    dm = request.args.get('dm')
+    _process = Thread(target=process, args=(fp, cn, fn, ue, sip, dm))
     _process.start()
 
     return render_template('success.html', ue=ue, fn=fn)
