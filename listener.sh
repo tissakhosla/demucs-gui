@@ -1,9 +1,9 @@
 #! /bin/bash
-
+IFS=''
 while true
   do
-    for f in $(cat fpipe)
-      do demucs -n htdemucs_ft $f
+    for dcmd in $(cat fpipe)
+      do eval $dcmd
     done
 done
 

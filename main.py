@@ -45,7 +45,7 @@ def utime():
     dt = datetime.now()
     return datetime.timestamp(dt)
 
-def email(uid, fn, em, ip):
+def email(uid, fn, em, ip, dm):
     '''send email'''
     # Set up the SMTP server
     server = smtplib.SMTP(os.getenv('G_SMTP'), 587)
@@ -60,10 +60,10 @@ def email(uid, fn, em, ip):
     subject = f'{fn} Split Tracks'
 
     body = f'Here are the links your files: \
-        \n\n http://{ip}/separated/htdemucs_ft/{uid}/bass.wav \
-        \n http://{ip}/separated/htdemucs_ft/{uid}/drums.wav \
-        \n http://{ip}/separated/htdemucs_ft/{uid}/other.wav \
-        \n http://{ip}/separated/htdemucs_ft/{uid}/vocals.wav'
+        \n\n http://{ip}/separated/{dm}/{uid}/bass.wav \
+        \n http://{ip}/separated/{dm}/{uid}/drums.wav \
+        \n http://{ip}/separated/{dm}/{uid}/other.wav \
+        \n http://{ip}/separated/{dm}/{uid}/vocals.wav'
 
     msg = f'Subject: {subject}\n\n{body}'
     server.sendmail(me, to, msg)
@@ -72,13 +72,11 @@ def email(uid, fn, em, ip):
     server.quit()
 
 def demucs(p, m):
-    print(p)
-    print(m)
-    os.system(f'echo {path} > fpipe')
+    os.system(f'echo demucs -n {m} {p} > fpipe')
 
 def process(path, code, trackname, uemail, hostip, model):
     demucs(path, model)
-    email(code, trackname, uemail, hostip)
+    email(code, trackname, uemail, hostip, model)
 
 @app.route("/")
 def to_upload():
@@ -140,6 +138,7 @@ def success():
     ue = request.args.get('ue')
     sip = request.args.get('sip')
     dm = request.args.get('dm')
+    
     _process = Thread(target=process, args=(fp, cn, fn, ue, sip, dm))
     _process.start()
 
