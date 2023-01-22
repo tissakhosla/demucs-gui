@@ -25,6 +25,9 @@ logging.basicConfig(level=logging.INFO)
 
 UPLOAD_FOLDER = '/tmp/uploads'
 ALLOWED_EXTENSIONS = { 'wav', 'mp3' }
+MODELS = [
+    'htdemucs', 'htdemucs_ft', 'htdemucs_6s', 'htdemucs_mmi',
+    'mdx', 'mdx_extra', 'mdx_q', 'mdx_extra_q']
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -65,10 +68,13 @@ def email(uid, fn, em, ip, dm):
         \n http://{ip}/separated/{dm}/{uid}/other.wav \
         \n http://{ip}/separated/{dm}/{uid}/vocals.wav'
 
+    if dm == 'htdemucs_6s':
+        body += f'\n http://{ip}/separated/{dm}/{uid}/guitar.wav \
+        \n http://{ip}/separated/{dm}/{uid}/piano.wav'
+
     msg = f'Subject: {subject}\n\n{body}'
     server.sendmail(me, to, msg)
 
-    logging.info(' > to: %s', em)
     server.quit()
 
 def demucs(p, m):
@@ -77,6 +83,8 @@ def demucs(p, m):
 def process(path, code, trackname, uemail, hostip, model):
     demucs(path, model)
     email(code, trackname, uemail, hostip, model)
+    # TODO: Why does this fire before demucs is complete?
+    logging.info(' > EMAIL to: %s', uemail)
 
 @app.route("/")
 def to_upload():
@@ -111,12 +119,11 @@ def upload_file():
             logging.info(' < TYPE: %s', file.content_type)
             logging.info(' < SIZE: %s bytes', len(file.read()))
             file.seek(0)
-            codename = str(uuid.uuid4())
 
             # write file to FS
+            codename = str(uuid.uuid4())
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], codename)
             file.save(filepath)
-            print(filename)
 
             return redirect(url_for(
                 'success',
@@ -127,7 +134,7 @@ def upload_file():
                 sip=server_ip,
                 dm=demucsmodel))
 
-    return render_template('upload.html')
+    return render_template('upload.html', models=enumerate(MODELS))
 
 @app.route('/success')
 def success():
@@ -147,3 +154,7 @@ def success():
 @app.route('/separated/<path:filename>')
 def serve_static(filename):
     return send_from_directory('separated', filename)
+
+@app.route('/help')
+def help():
+    return render_template('help.html')
