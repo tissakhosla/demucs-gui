@@ -48,7 +48,7 @@ def utime():
     dt = datetime.now()
     return datetime.timestamp(dt)
 
-def email(uid, fn, em, ip, dm):
+def email(uid, fn, em, ip, dm, op):
     '''send email'''
     # Set up the SMTP server
     server = smtplib.SMTP(os.getenv('G_SMTP'), 587)
@@ -63,26 +63,31 @@ def email(uid, fn, em, ip, dm):
     subject = f'{fn} Split Tracks'
 
     body = f'Here are the links your files: \
-        \n\n http://{ip}/separated/{dm}/{uid}/bass.wav \
-        \n http://{ip}/separated/{dm}/{uid}/drums.wav \
-        \n http://{ip}/separated/{dm}/{uid}/other.wav \
-        \n http://{ip}/separated/{dm}/{uid}/vocals.wav'
+        \n\n http://{ip}/separated/{dm}/{uid}/bass.{op} \
+        \n http://{ip}/separated/{dm}/{uid}/drums.{op} \
+        \n http://{ip}/separated/{dm}/{uid}/other.{op} \
+        \n http://{ip}/separated/{dm}/{uid}/vocals.{op}'
 
     if dm == 'htdemucs_6s':
-        body += f'\n http://{ip}/separated/{dm}/{uid}/guitar.wav \
-        \n http://{ip}/separated/{dm}/{uid}/piano.wav'
+        body += f'\n http://{ip}/separated/{dm}/{uid}/guitar.{op} \
+        \n http://{ip}/separated/{dm}/{uid}/piano.{op}'
 
     msg = f'Subject: {subject}\n\n{body}'
     server.sendmail(me, to, msg)
 
     server.quit()
 
-def demucs(p, m):
-    os.system(f'echo demucs -n {m} {p} > fpipe')
+def demucs(p, m, o):
+    if o == 'mp3':
+        flags = f'--mp3 -n {m} {p}'
+    else:
+        flags = f'-n {m} {p}'
 
-def process(path, code, trackname, uemail, hostip, model):
-    demucs(path, model)
-    email(code, trackname, uemail, hostip, model)
+    os.system(f'echo demucs {flags} > fpipe')
+
+def process(path, code, trackname, uemail, hostip, model, output):
+    demucs(path, model, output)
+    email(code, trackname, uemail, hostip, model, output)
     # TODO: Why does this fire before demucs is complete?
     logging.info(' > EMAIL to: %s', uemail)
 
@@ -108,6 +113,7 @@ def upload_file():
         file = request.files['file']
         useremail = request.form['email']
         demucsmodel = request.form['model']
+        outputformat = request.form['output']
 
         if file.filename == '':
             return redirect(request.url)
@@ -132,7 +138,8 @@ def upload_file():
                 fn=filename,
                 ue=useremail,
                 sip=server_ip,
-                dm=demucsmodel))
+                dm=demucsmodel,
+                of=outputformat))
 
     return render_template('upload.html', models=enumerate(MODELS))
 
@@ -145,8 +152,11 @@ def success():
     ue = request.args.get('ue')
     sip = request.args.get('sip')
     dm = request.args.get('dm')
+    of = request.args.get('of')
     
-    _process = Thread(target=process, args=(fp, cn, fn, ue, sip, dm))
+    _process = Thread(
+        target=process,
+        args=(fp, cn, fn, ue, sip, dm, of))
     _process.start()
 
     return render_template('success.html', ue=ue, fn=fn)
@@ -158,3 +168,7 @@ def serve_static(filename):
 @app.route('/help')
 def help():
     return render_template('help.html')
+
+@app.route('/license')
+def license():
+    return render_template('license.html')

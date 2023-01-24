@@ -1,11 +1,11 @@
 <h1>Upload New File</h1>
 <form method=post enctype=multipart/form-data>
+
     <label for="email">Enter your email:</label>
     <input type="email" id="email" name="email" required>
     <input type=file name=file required accept="audio/wav, audio/mp3">
 
-    <p>Please select model:</p>
-
+    <p>Select model:</p>
     {% for n, model in models: %}
         {% if not n %}
             <input type="radio" id="{{model}}" name="model" value="{{model}}" checked>
@@ -15,5 +15,12 @@
             <label for="{{model}}">{{model}}</label><br>
         {% endif %}
     {% endfor %}
+
+    <p>Select output format:</p>
+    <input type="radio" id="wav" name="output" value="wav" checked>
+    <label for="wav">wav</label><br>
+    <input type="radio" id="mp3" name="output" value="mp3">
+    <label for="mp3">mp3</label><br>
+
     <input style="margin: 10px 0 0 10px;" type=submit value=Upload>
 </form>
