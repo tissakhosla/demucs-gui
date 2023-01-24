@@ -1,7 +1,7 @@
 # Browser GUI for [DEMUCS](https://github.com/facebookresearch/demucs) v1.0
 
 ## SETUP Instructions to run on AWS
-
+#### Start at Step 29 if restarting a stopped instance.
 ### On an new instance
 1. Create a new instance of latest Ubuntu build.
     - Ideally t3.2xlarge - 32GiB Memory - 8vCPUs
@@ -47,8 +47,8 @@ Host github.com
 1. `python3 -m pip list`
 1. `python3 -m pip install --upgrade pip` if needed
 1. `pip install -r requirements.txt`
-1. `mkdir /tmp/uploads`
 1. `mkfifo fpipe`
+1. `mkdir /tmp/uploads`
 1. `screen`
 1. `↵`
 1. in screen 1 - `flask --app main --debug run --host=0.0.0.0`
