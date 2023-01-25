@@ -8,7 +8,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>{% block title %}{% endblock %} - demucsgui</title>
 </head>
-
+<header>
+    <h1>demucs gui</h1>
+</header>
 <body>
     {% block body %}{% endblock %}
 </body>
@@ -16,9 +18,6 @@
     <a href="{{ url_for('upload_file') }}">New File</a>
     <a target="_blank" href="{{ url_for('_help') }}">Help</a>
     <a target="_blank" href="{{ url_for('_license') }}">License</a>
-    <a target="_blank" href="https://www.tissakhosla.com/">
-        <♩♩♩♩/>
-    </a>
 </footer>
 
 </html>
