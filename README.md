@@ -1,7 +1,7 @@
 # Browser GUI for [DEMUCS](https://github.com/facebookresearch/demucs) v1.0
 
 ## SETUP Instructions to run on AWS
-#### Start at Step 29 if restarting a stopped instance.
+#### Start at Step 28 if restarting a stopped instance.
 ### On an new instance
 1. Create a new instance of latest Ubuntu build.
     - Ideally t3.2xlarge - 32GiB Memory - 8vCPUs
@@ -42,12 +42,13 @@ Host github.com
 1. `python3 -m venv envs/<ENVNAME>`
 1. `git clone git@github.com:tissakhosla/demucs-gui.git`
 1. `cd demucs-gui`
-1. `export <ENV ATTRIBUTES>`
 1. `. ~/envs/<ENVNAME>/bin/activate`
 1. `python3 -m pip list`
 1. `python3 -m pip install --upgrade pip` if needed
 1. `pip install -r requirements.txt`
 1. `mkfifo fpipe`
+1. `export <ENV ATTRIBUTES>`
+1. `. ~/envs/<ENVNAME>/bin/activate` if not already
 1. `mkdir /tmp/uploads`
 1. `screen`
 1. `↵`

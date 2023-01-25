@@ -8,6 +8,7 @@ import os
 import smtplib
 import uuid
 import logging
+import time
 
 from datetime import datetime
 from threading import Thread
@@ -62,7 +63,7 @@ def email(uid, fn, em, ip, dm, op):
     to = [em]
     subject = f'{fn} Split Tracks'
 
-    body = f'Here are the links your files: \
+    body = f'Here are links to your files: \
         \n\n http://{ip}/separated/{dm}/{uid}/bass.{op} \
         \n http://{ip}/separated/{dm}/{uid}/drums.{op} \
         \n http://{ip}/separated/{dm}/{uid}/other.{op} \
@@ -77,16 +78,42 @@ def email(uid, fn, em, ip, dm, op):
 
     server.quit()
 
-def demucs(p, m, o):
+def checkfiles(m, c, o, t, u):
+    if m == 'htdemucs_6s':
+        while not (
+        os.path.exists(f'./separated/{m}/{c}/bass.{o}') &
+        os.path.exists(f'./separated/{m}/{c}/drums.{o}') &
+        os.path.exists(f'./separated/{m}/{c}/bass.{o}') &
+        os.path.exists(f'./separated/{m}/{c}/other.{o}') &
+        os.path.exists(f'./separated/{m}/{c}/guitar.{o}') &
+        os.path.exists(f'./separated/{m}/{c}/piano.{o}')):
+            os.system(f'ls -al ./separated/{m}/{c}')
+            time.sleep(10)
+            logging.info(' < STILL SEPARATING: %s for %s', t, u)
+    
+    else:
+        while not (
+        os.path.exists(f'./separated/{m}/{c}/bass.{o}') &
+        os.path.exists(f'./separated/{m}/{c}/drums.{o}') &
+        os.path.exists(f'./separated/{m}/{c}/bass.{o}') &
+        os.path.exists(f'./separated/{m}/{c}/other.{o}')):
+            os.system(f'ls -al ./separated/{m}/{c}')
+            time.sleep(10)
+            logging.info(' < STILL SEPARATING: %s for %s', t, u)
+
+def demucs(p, m, o, c, t, u):
     if o == 'mp3':
         flags = f'--mp3 -n {m} {p}'
     else:
         flags = f'-n {m} {p}'
 
     os.system(f'echo demucs {flags} > fpipe')
+    checkfiles(m, c, o, t, u)
+    os.system(f'ls -al ./separated/{m}/{c}')
+
 
 def process(path, code, trackname, uemail, hostip, model, output):
-    demucs(path, model, output)
+    demucs(path, model, output, code, trackname, uemail)
     email(code, trackname, uemail, hostip, model, output)
     # TODO: Why does this fire before demucs is complete?
     logging.info(' > EMAIL to: %s', uemail)
