@@ -12,5 +12,10 @@
 <body>
     {% block body %}{% endblock %}
 </body>
-
+<footer>
+    <p>
+        <a target="_blank" href="{{ url_for('_help') }}">Help</a>
+        <a target="_blank" href="{{ url_for('_license') }}">License</a>
+    </p>
+</footer>
 </html>

@@ -10,7 +10,6 @@ import uuid
 import logging
 import time
 
-from datetime import datetime
 from threading import Thread
 from flask import (
     Flask, render_template, request,
@@ -40,83 +39,89 @@ assert os.getenv('G_SMTP')
 assert os.getenv('G_MAIL')
 assert os.getenv('G_KEY')
 
+class TrackProc:
+    '''process track and send email'''
+    def __init__(self, attributes):
+
+        self.atts = attributes
+        self.flags = None
+
+    def demucs(self):
+        '''send command to pipe'''
+        os.system(f'echo demucs {self.flags} > fpipe')
+
+    def setflags(self):
+        '''create flags for cmd'''
+        if self.atts['of'] == 'mp3':
+            self.flags = f'--mp3 -n {self.atts["dm"]} {self.atts["fp"]}'
+        else:
+            self.flags = f'-n {self.atts["dm"]} {self.atts["fp"]}'
+
+    def giveprogress(self, logmsg):
+        '''log mesg every 5 seconds w status'''
+        time.sleep(5)
+        logging.info(' < %s: %s for %s', logmsg, self.atts['fn'], self.atts['ue'])
+
+    def filenum(self, filedir, filecount):
+        '''wait for filecount to = 4 or 6 based on model'''
+        while len(os.listdir(filedir)) != filecount:
+            self.giveprogress('STILL SEPARATING')
+
+    def isdir(self):
+        '''check if the directory exists'''
+        filedir = f'./separated/{self.atts["dm"]}/{self.atts["cn"]}'
+        while os.path.exists(filedir):
+            if self.atts['dm'] == 'htdemucs_6s':
+                self.filenum(filedir, 6)
+                return
+            else:
+                self.filenum(filedir, 4)
+                return
+
+        self.giveprogress('BUILDING DIR')
+        self.isdir()
+
+    def email(self):
+        '''send email'''
+        # Set up the SMTP server
+        server = smtplib.SMTP(os.getenv('G_SMTP'), 587)
+        server.starttls()
+
+        # Login to the email account
+        me = os.getenv('G_MAIL')
+        server.login(me, os.getenv('G_KEY'))
+
+        # Build the email
+        to = [self.atts['ue']]
+        subject = f'{self.atts["fn"]} Split Tracks'
+
+        body = f'Here are links to your files: \
+            \n\n http://{self.atts["sip"]}/separated/{self.atts["dm"]}/{self.atts["cn"]}/bass.{self.atts["of"]} \
+            \n http://{self.atts["sip"]}/separated/{self.atts["dm"]}/{self.atts["cn"]}/drums.{self.atts["of"]} \
+            \n http://{self.atts["sip"]}/separated/{self.atts["dm"]}/{self.atts["cn"]}/other.{self.atts["of"]} \
+            \n http://{self.atts["sip"]}/separated/{self.atts["dm"]}/{self.atts["cn"]}/vocals.{self.atts["of"]}'
+
+        if self.atts["dm"] == 'htdemucs_6s':
+            body += f'\n http://{self.atts["sip"]}/separated/{self.atts["dm"]}/{self.atts["cn"]}/guitar.{self.atts["of"]} \
+            \n http://{self.atts["sip"]}/separated/{self.atts["dm"]}/{self.atts["cn"]}/piano.{self.atts["of"]}'
+
+        msg = f'Subject: {subject}\n\n{body}'
+        server.sendmail(me, to, msg)
+
+        server.quit()
+        logging.info(' > EMAIL to: %s', self.atts["ue"])
+
 def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.',1)[1].lower() in ALLOWED_EXTENSIONS
 
-def utime():
-    '''create timestamp when called'''
-    dt = datetime.now()
-    return datetime.timestamp(dt)
-
-def email(uid, fn, em, ip, dm, op):
-    '''send email'''
-    # Set up the SMTP server
-    server = smtplib.SMTP(os.getenv('G_SMTP'), 587)
-    server.starttls()
-
-    # Login to the email account
-    me = os.getenv('G_MAIL')
-    server.login(me, os.getenv('G_KEY'))
-
-    # Build the email
-    to = [em]
-    subject = f'{fn} Split Tracks'
-
-    body = f'Here are links to your files: \
-        \n\n http://{ip}/separated/{dm}/{uid}/bass.{op} \
-        \n http://{ip}/separated/{dm}/{uid}/drums.{op} \
-        \n http://{ip}/separated/{dm}/{uid}/other.{op} \
-        \n http://{ip}/separated/{dm}/{uid}/vocals.{op}'
-
-    if dm == 'htdemucs_6s':
-        body += f'\n http://{ip}/separated/{dm}/{uid}/guitar.{op} \
-        \n http://{ip}/separated/{dm}/{uid}/piano.{op}'
-
-    msg = f'Subject: {subject}\n\n{body}'
-    server.sendmail(me, to, msg)
-
-    server.quit()
-
-def checkfiles(m, c, o, t, u):
-    if m == 'htdemucs_6s':
-        while not (
-        os.path.exists(f'./separated/{m}/{c}/bass.{o}') &
-        os.path.exists(f'./separated/{m}/{c}/drums.{o}') &
-        os.path.exists(f'./separated/{m}/{c}/bass.{o}') &
-        os.path.exists(f'./separated/{m}/{c}/other.{o}') &
-        os.path.exists(f'./separated/{m}/{c}/guitar.{o}') &
-        os.path.exists(f'./separated/{m}/{c}/piano.{o}')):
-            os.system(f'ls -al ./separated/{m}/{c}')
-            time.sleep(10)
-            logging.info(' < STILL SEPARATING: %s for %s', t, u)
-    
-    else:
-        while not (
-        os.path.exists(f'./separated/{m}/{c}/bass.{o}') &
-        os.path.exists(f'./separated/{m}/{c}/drums.{o}') &
-        os.path.exists(f'./separated/{m}/{c}/bass.{o}') &
-        os.path.exists(f'./separated/{m}/{c}/other.{o}')):
-            os.system(f'ls -al ./separated/{m}/{c}')
-            time.sleep(10)
-            logging.info(' < STILL SEPARATING: %s for %s', t, u)
-
-def demucs(p, m, o, c, t, u):
-    if o == 'mp3':
-        flags = f'--mp3 -n {m} {p}'
-    else:
-        flags = f'-n {m} {p}'
-
-    os.system(f'echo demucs {flags} > fpipe')
-    checkfiles(m, c, o, t, u)
-    os.system(f'ls -al ./separated/{m}/{c}')
-
-
-def process(path, code, trackname, uemail, hostip, model, output):
-    demucs(path, model, output, code, trackname, uemail)
-    email(code, trackname, uemail, hostip, model, output)
-    # TODO: Why does this fire before demucs is complete?
-    logging.info(' > EMAIL to: %s', uemail)
+def process(a):
+    '''initialize TrackProcess class and run methods'''
+    t = TrackProc(a)
+    t.setflags()
+    t.demucs()
+    t.isdir()
+    t.email()
 
 @app.route("/")
 def to_upload():
@@ -173,29 +178,28 @@ def upload_file():
 @app.route('/success')
 def success():
     '''show success after saving file'''
-    fp = request.args.get('fp')
-    cn = request.args.get('cn')
-    fn = request.args.get('fn')
-    ue = request.args.get('ue')
-    sip = request.args.get('sip')
-    dm = request.args.get('dm')
-    of = request.args.get('of')
-    
-    _process = Thread(
-        target=process,
-        args=(fp, cn, fn, ue, sip, dm, of))
+    atts = {
+        'fp': request.args.get('fp'),
+        'cn': request.args.get('cn'),
+        'fn': request.args.get('fn'),
+        'ue': request.args.get('ue'),
+        'sip': request.args.get('sip'),
+        'dm': request.args.get('dm'),
+        'of': request.args.get('of')}
+
+    _process = Thread( target=process, args=(atts,))
     _process.start()
 
-    return render_template('success.html', ue=ue, fn=fn)
+    return render_template('success.html', ue=atts['ue'], fn=atts['fn'])
 
 @app.route('/separated/<path:filename>')
 def serve_static(filename):
     return send_from_directory('separated', filename)
 
 @app.route('/help')
-def help():
+def _help():
     return render_template('help.html')
 
 @app.route('/license')
-def license():
+def _license():
     return render_template('license.html')
