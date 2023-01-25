@@ -34,12 +34,11 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SECRET_KEY'] = os.urandom(12)
 
 # confirm env vars
-
 assert os.getenv('G_SMTP')
 assert os.getenv('G_MAIL')
 assert os.getenv('G_KEY')
 
-class TrackProc:
+class Track:
     '''process track and send email'''
     def __init__(self, attributes):
 
@@ -70,16 +69,40 @@ class TrackProc:
     def isdir(self):
         '''check if the directory exists'''
         filedir = f'./separated/{self.atts["dm"]}/{self.atts["cn"]}'
+
         while os.path.exists(filedir):
             if self.atts['dm'] == 'htdemucs_6s':
                 self.filenum(filedir, 6)
-                return
             else:
                 self.filenum(filedir, 4)
-                return
+            return
 
         self.giveprogress('BUILDING DIR')
         self.isdir()
+
+    def message(self):
+        '''build the email message'''
+
+        ip = self.atts['sip']
+        dm = self.atts['dm']
+        cn = self.atts['cn']
+        of = self.atts['of']
+
+        stems = ['bass', 'drums', 'other', 'vocals', 'guitar', 'piano']
+
+        subject = f'{self.atts["fn"]} Stems'
+        link = 'http://{}/separated/{}/{}/{}.{} \n'
+        body = 'Here are links to your files: \n'
+
+        if dm == 'htdemucs_6s':
+            for stem in stems:
+                body += link.format(ip, dm, cn, stem, of)
+        else:
+            for stem in stems[:4]:
+                body += link.format(ip, dm, cn, stem, of)
+
+        body += 'Thanks for using the demucs-gui.'
+        return f'Subject: {subject}\n\n{body}'
 
     def email(self):
         '''send email'''
@@ -93,19 +116,7 @@ class TrackProc:
 
         # Build the email
         to = [self.atts['ue']]
-        subject = f'{self.atts["fn"]} Split Tracks'
-
-        body = f'Here are links to your files: \
-            \n\n http://{self.atts["sip"]}/separated/{self.atts["dm"]}/{self.atts["cn"]}/bass.{self.atts["of"]} \
-            \n http://{self.atts["sip"]}/separated/{self.atts["dm"]}/{self.atts["cn"]}/drums.{self.atts["of"]} \
-            \n http://{self.atts["sip"]}/separated/{self.atts["dm"]}/{self.atts["cn"]}/other.{self.atts["of"]} \
-            \n http://{self.atts["sip"]}/separated/{self.atts["dm"]}/{self.atts["cn"]}/vocals.{self.atts["of"]}'
-
-        if self.atts["dm"] == 'htdemucs_6s':
-            body += f'\n http://{self.atts["sip"]}/separated/{self.atts["dm"]}/{self.atts["cn"]}/guitar.{self.atts["of"]} \
-            \n http://{self.atts["sip"]}/separated/{self.atts["dm"]}/{self.atts["cn"]}/piano.{self.atts["of"]}'
-
-        msg = f'Subject: {subject}\n\n{body}'
+        msg = self.message()
         server.sendmail(me, to, msg)
 
         server.quit()
@@ -116,8 +127,8 @@ def allowed_file(filename):
         filename.rsplit('.',1)[1].lower() in ALLOWED_EXTENSIONS
 
 def process(a):
-    '''initialize TrackProcess class and run methods'''
-    t = TrackProc(a)
+    '''initialize Track class and run methods'''
+    t = Track(a)
     t.setflags()
     t.demucs()
     t.isdir()
@@ -178,16 +189,15 @@ def upload_file():
 @app.route('/success')
 def success():
     '''show success after saving file'''
-    atts = {
-        'fp': request.args.get('fp'),
-        'cn': request.args.get('cn'),
-        'fn': request.args.get('fn'),
-        'ue': request.args.get('ue'),
-        'sip': request.args.get('sip'),
-        'dm': request.args.get('dm'),
-        'of': request.args.get('of')}
+    atts = {'fp': request.args.get('fp'),
+            'cn': request.args.get('cn'),
+            'fn': request.args.get('fn'),
+            'ue': request.args.get('ue'),
+            'sip': request.args.get('sip'),
+            'dm': request.args.get('dm'),
+            'of': request.args.get('of')}
 
-    _process = Thread( target=process, args=(atts,))
+    _process = Thread(target=process, args=(atts,))
     _process.start()
 
     return render_template('success.html', ue=atts['ue'], fn=atts['fn'])
