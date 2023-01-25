@@ -26,7 +26,7 @@ logging.basicConfig(level=logging.INFO)
 UPLOAD_FOLDER = '/tmp/uploads'
 ALLOWED_EXTENSIONS = { 'wav', 'mp3' }
 MODELS = [
-    'htdemucs', 'htdemucs_ft', 'htdemucs_6s', 'htdemucs_mmi',
+    'htdemucs', 'htdemucs_ft', 'htdemucs_6s', 'hdemucs_mmi',
     'mdx', 'mdx_extra', 'mdx_q', 'mdx_extra_q']
 
 app = Flask(__name__)
