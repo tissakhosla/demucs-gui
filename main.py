@@ -9,6 +9,7 @@ import smtplib
 import uuid
 import logging
 import time
+import shutil
 
 from threading import Thread
 from flask import (
@@ -44,6 +45,7 @@ class Track:
 
         self.atts = attributes
         self.flags = None
+        self.filedir = f'./separated/{self.atts["dm"]}/{self.atts["cn"]}'
 
     def demucs(self):
         '''send command to pipe'''
@@ -61,24 +63,35 @@ class Track:
         time.sleep(5)
         logging.info(' < %s: %s for %s', logmsg, self.atts['fn'], self.atts['ue'])
 
-    def filenum(self, filedir, filecount):
+    def filenum(self, filecount):
         '''wait for filecount to = 4 or 6 based on model'''
-        while len(os.listdir(filedir)) != filecount:
+        while len(os.listdir(self.filedir)) != filecount:
             self.giveprogress('STILL SEPARATING')
 
     def isdir(self):
         '''check if the directory exists'''
-        filedir = f'./separated/{self.atts["dm"]}/{self.atts["cn"]}'
 
-        while os.path.exists(filedir):
+
+        while os.path.exists(self.filedir):
             if self.atts['dm'] == 'htdemucs_6s':
-                self.filenum(filedir, 6)
+                self.filenum(6)
             else:
-                self.filenum(filedir, 4)
+                self.filenum(4)
             return
 
         self.giveprogress('BUILDING DIR')
         self.isdir()
+
+    def zip(self):
+        '''zip the directory'''
+        logging.info(' < ZIP START: %s', self.atts["fn"])
+        zipdir = f"{str(uuid.uuid4())}/{self.atts['fn'][:-4]}"
+        shutil.make_archive(
+            f"./zips/{zipdir}",
+            'zip',
+            self.filedir
+        )
+        logging.info(' > ZIPPED: %s', f'{zipdir}')
 
     def message(self):
         '''build the email message'''
@@ -132,7 +145,8 @@ def process(a):
     t.setflags()
     t.demucs()
     t.isdir()
-    t.email()
+    t.zip()
+    # t.email()
 
 @app.route("/")
 def to_upload():
