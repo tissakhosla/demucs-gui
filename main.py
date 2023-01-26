@@ -46,6 +46,7 @@ class Track:
         self.atts = attributes
         self.flags = None
         self.filedir = f'./separated/{self.atts["dm"]}/{self.atts["cn"]}'
+        self.zip = None
 
     def demucs(self):
         '''send command to pipe'''
@@ -82,56 +83,37 @@ class Track:
         self.giveprogress('BUILDING DIR')
         self.isdir()
 
-    def zip(self):
+    def zippit(self):
         '''zip the directory'''
         logging.info(' < ZIP START: %s', self.atts["fn"])
         zipdir = f"{str(uuid.uuid4())}/{self.atts['fn'][:-4]}"
-        shutil.make_archive(
-            f"./zips/{zipdir}",
-            'zip',
-            self.filedir
-        )
+        self.zip = f"zips/{zipdir}"
+
+        shutil.make_archive( self.zip, 'zip', self.filedir )
+
         logging.info(' > ZIPPED: %s', f'{zipdir}')
 
     def message(self):
         '''build the email message'''
-
-        ip = self.atts['sip']
-        dm = self.atts['dm']
-        cn = self.atts['cn']
-        of = self.atts['of']
-
-        stems = ['bass', 'drums', 'other', 'vocals', 'guitar', 'piano']
-
         subject = f'{self.atts["fn"]} Stems'
-        link = 'http://{}/separated/{}/{}/{}.{} \n'
-        body = 'Here are links to your files: \n'
+        link = f"http://{self.atts['sip']}/{self.zip}.zip"
 
-        if dm == 'htdemucs_6s':
-            for stem in stems:
-                body += link.format(ip, dm, cn, stem, of)
-        else:
-            for stem in stems[:4]:
-                body += link.format(ip, dm, cn, stem, of)
+        body = f'Download the zip file below to access stems: \
+                \n{link} \
+                \nThanks for using the demucs-gui.'
 
-        body += 'Thanks for using the demucs-gui.'
         return f'Subject: {subject}\n\n{body}'
 
-    def email(self):
+    def sendmail(self):
         '''send email'''
         # Set up the SMTP server
         server = smtplib.SMTP(os.getenv('G_SMTP'), 587)
         server.starttls()
-
         # Login to the email account
         me = os.getenv('G_MAIL')
         server.login(me, os.getenv('G_KEY'))
-
         # Build the email
-        to = [self.atts['ue']]
-        msg = self.message()
-        server.sendmail(me, to, msg)
-
+        server.sendmail(me, [self.atts['ue']], self.message())
         server.quit()
         logging.info(' > EMAIL to: %s', self.atts["ue"])
 
@@ -145,8 +127,8 @@ def process(a):
     t.setflags()
     t.demucs()
     t.isdir()
-    t.zip()
-    # t.email()
+    t.zippit()
+    t.sendmail()
 
 @app.route("/")
 def to_upload():
@@ -216,9 +198,9 @@ def success():
 
     return render_template('success.html', ue=atts['ue'], fn=atts['fn'])
 
-@app.route('/separated/<path:filename>')
-def serve_static(filename):
-    return send_from_directory('separated', filename)
+@app.route('/zips/<path:filename>')
+def serve_zip(filename):
+    return send_from_directory('zips', filename)
 
 @app.route('/help')
 def _help():
