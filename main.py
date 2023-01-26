@@ -180,7 +180,7 @@ def upload_file():
                 dm=demucsmodel,
                 of=outputformat))
 
-    return render_template('upload.html', models=enumerate(MODELS))
+    return render_template('upload.html', models=MODELS)
 
 @app.route('/success')
 def success():
