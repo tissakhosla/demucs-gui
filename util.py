@@ -6,6 +6,39 @@ import time
 import shutil
 import logging
 import uuid
+import sqlite3
+
+class User:
+    def __init__(self, useremail, password):
+        self.ue = useremail
+        self.pwd = password
+
+class SqlAction:
+    '''sql crud'''
+    def __init__(self, tbl):
+        self.tbl = tbl
+
+    def db_createTable(self):
+        '''create the initial table'''
+        con = sqlite3.connect(self.tbl, check_same_thread=False)
+        cur = con.cursor()
+        sqlcmd = '''CREATE TABLE IF NOT EXISTS users
+                    (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                    username TEXT NOT NULL, 
+                    password TEXT NOT NULL)'''
+        cur.execute(sqlcmd)
+        con.commit()
+        con.close()
+
+    def db_insert(self, user):
+        '''insert a new user'''
+        con = sqlite3.connect('users.db')
+        cur = con.cursor()
+        cur.execute('''INSERT INTO users
+                    (username, password) VALUES (?, ?)''',
+                    (user.ue, user.pwd))
+        con.commit()
+        con.close()
 
 class Track:
     '''process track and send email'''

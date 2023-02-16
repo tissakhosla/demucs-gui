@@ -58,18 +58,13 @@ Host github.com
 1. go to `<ELASTIC_IP>:5000` to test
 
 ### Updates needed
-- use LARGE instance... I think it's definitely faster
-- add frontend radio buttons
-    - add support to export mp3s
-    - add support to use other models
+- send email upon registration
+- add cookie upon login
+- hash passwords - very important!
 - create new email address to handle all this
 - Get DNS
--  Make the frontend pretty (CSS)
-- <♩♩♩♩/> and make it an HTML email
 - cron removal of separated tracks once a week
 - upload completed files to S3 with [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
 - don't use flask built in server in PRD
-- make separate class for functions, so routes are in one place, methods in another. 
-- send a zip file for download?
 - SSL
 - Figure out cost spread w Sukhi

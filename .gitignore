@@ -2,3 +2,4 @@ separated/
 __pycache__/
 notes/
 zips/
+*.db

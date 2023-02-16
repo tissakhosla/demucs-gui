@@ -13,7 +13,7 @@ from flask import (
     redirect, url_for, send_from_directory
 )
 from werkzeug.utils import secure_filename
-from util import Track
+from util import Track, SqlAction, User
 
 # setup logging
 logging.basicConfig(level=logging.INFO)
@@ -35,7 +35,13 @@ assert os.getenv('G_SMTP')
 assert os.getenv('G_MAIL')
 assert os.getenv('G_KEY')
 
+# initialize DB
+sqla = SqlAction("users.db")
+sqla.db_createTable()
+
+
 def allowed_file(filename):
+    '''check filename safety'''
     return '.' in filename and \
         filename.rsplit('.',1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -51,6 +57,15 @@ def process(a):
 @app.route("/")
 def to_upload():
     return redirect('/upload')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    '''create a useremail and password'''
+    if request.method == 'POST':
+        newUser = User(request.form['email'], request.form['password'])
+        sqla.db_insert(newUser)
+        return redirect(url_for('upload_file'))
+    return render_template('register.html')
 
 @app.route("/upload", methods=['GET', 'POST'])
 def upload_file():
