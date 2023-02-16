@@ -3,21 +3,17 @@ A user can upload a file
 Demucs will split it
 On success, we will send the user an email
 '''
-
 import os
-import smtplib
-import uuid
 import logging
-import time
-import shutil
+import uuid
 
 from threading import Thread
 from flask import (
     Flask, render_template, request,
     redirect, url_for, send_from_directory
 )
-
 from werkzeug.utils import secure_filename
+from util import Track
 
 # setup logging
 logging.basicConfig(level=logging.INFO)
@@ -38,84 +34,6 @@ app.config['SECRET_KEY'] = os.urandom(12)
 assert os.getenv('G_SMTP')
 assert os.getenv('G_MAIL')
 assert os.getenv('G_KEY')
-
-class Track:
-    '''process track and send email'''
-    def __init__(self, attributes):
-
-        self.atts = attributes
-        self.flags = None
-        self.filedir = f'./separated/{self.atts["dm"]}/{self.atts["cn"]}'
-        self.zip = None
-
-    def demucs(self):
-        '''send command to pipe'''
-        os.system(f'echo demucs {self.flags} > fpipe')
-
-    def setflags(self):
-        '''create flags for cmd'''
-        if self.atts['of'] == 'mp3':
-            self.flags = f'--mp3 -n {self.atts["dm"]} {self.atts["fp"]}'
-        else:
-            self.flags = f'-n {self.atts["dm"]} {self.atts["fp"]}'
-
-    def giveprogress(self, logmsg):
-        '''log mesg every 5 seconds w status'''
-        time.sleep(5)
-        logging.info(' < %s: %s for %s', logmsg, self.atts['fn'], self.atts['ue'])
-
-    def filenum(self, filecount):
-        '''wait for filecount to = 4 or 6 based on model'''
-        while len(os.listdir(self.filedir)) != filecount:
-            self.giveprogress('STILL SEPARATING')
-
-    def isdir(self):
-        '''check if the directory exists'''
-
-
-        while os.path.exists(self.filedir):
-            if self.atts['dm'] == 'htdemucs_6s':
-                self.filenum(6)
-            else:
-                self.filenum(4)
-            return
-
-        self.giveprogress('BUILDING DIR')
-        self.isdir()
-
-    def zippit(self):
-        '''zip the directory'''
-        logging.info(' < ZIP START: %s', self.atts["fn"])
-        zipdir = f"{str(uuid.uuid4())}/{self.atts['fn'][:-4]}"
-        self.zip = f"zips/{zipdir}"
-
-        shutil.make_archive( self.zip, 'zip', self.filedir )
-
-        logging.info(' > ZIPPED: %s', f'{zipdir}')
-
-    def message(self):
-        '''build the email message'''
-        subject = f'{self.atts["fn"]} Stems'
-        link = f"http://{self.atts['sip']}/{self.zip}.zip"
-
-        body = f'Download the zip file below to access stems: \
-                \n{link} \
-                \nThanks for using the demucs-gui.'
-
-        return f'Subject: {subject}\n\n{body}'
-
-    def sendmail(self):
-        '''send email'''
-        # Set up the SMTP server
-        server = smtplib.SMTP(os.getenv('G_SMTP'), 587)
-        server.starttls()
-        # Login to the email account
-        me = os.getenv('G_MAIL')
-        server.login(me, os.getenv('G_KEY'))
-        # Build the email
-        server.sendmail(me, [self.atts['ue']], self.message())
-        server.quit()
-        logging.info(' > EMAIL to: %s', self.atts["ue"])
 
 def allowed_file(filename):
     return '.' in filename and \
