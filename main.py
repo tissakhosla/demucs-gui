@@ -55,8 +55,11 @@ def process(a):
     t.sendmail()
 
 @app.route("/")
-def to_upload():
-    return redirect('/upload')
+def index():
+    '''check if user is logged in'''
+    if request.cookies.get('demucs user'):
+        return redirect('/upload')
+    return redirect(url_for('login'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -70,12 +73,14 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     '''user login'''
+    if request.cookies.get('demucs user'):
+        return redirect('/upload')
     if request.method == 'POST':
         ue_pwd = User(request.form['email'], request.form['password'])
         user = sqla.db_read(ue_pwd)
         if user:
             res = make_response(redirect(url_for('upload_file')))
-            res.set_cookie("demucs user", "logged in", max_age=60)
+            res.set_cookie("demucs user", "logged in", max_age=900)
             return res
 
         flash('Incorrect username or password')
@@ -85,6 +90,9 @@ def login():
 @app.route("/upload", methods=['GET', 'POST'])
 def upload_file():
     '''main route'''
+    if not request.cookies.get('demucs user'):
+        flash("please login before file upload")
+        return redirect(url_for('login'))
     server_ip = request.host
     user_ip = request.environ['REMOTE_ADDR']
 

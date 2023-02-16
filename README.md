@@ -58,8 +58,9 @@ Host github.com
 1. go to `<ELASTIC_IP>:5000` to test
 
 ### Updates needed
+- make email class
 - send email upon registration
-- add cookie upon login
+- use secure flag on cookie w https
 - hash passwords - very important!
 - create new email address to handle all this
 - Get DNS

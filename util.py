@@ -85,7 +85,6 @@ class Track:
     def isdir(self):
         '''check if the directory exists'''
 
-
         while os.path.exists(self.filedir):
             if self.atts['dm'] == 'htdemucs_6s':
                 self.filenum(6)
