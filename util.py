@@ -40,6 +40,18 @@ class SqlAction:
         con.commit()
         con.close()
 
+    def db_read(self, user):
+        '''return user that logged in'''
+        con = sqlite3.connect('users.db')
+        cur = con.cursor()
+        cur.execute('''SELECT * FROM users WHERE
+                    username = ? AND password = ?''',
+                    (user.ue, user.pwd))
+        user = cur.fetchall()
+        con.commit()
+        con.close()
+        return user
+
 class Track:
     '''process track and send email'''
     def __init__(self, attributes):

@@ -9,8 +9,9 @@ import uuid
 
 from threading import Thread
 from flask import (
-    Flask, render_template, request,
-    redirect, url_for, send_from_directory
+    Flask, render_template, request, flash,
+    redirect, url_for, send_from_directory,
+    make_response
 )
 from werkzeug.utils import secure_filename
 from util import Track, SqlAction, User
@@ -39,7 +40,6 @@ assert os.getenv('G_KEY')
 sqla = SqlAction("users.db")
 sqla.db_createTable()
 
-
 def allowed_file(filename):
     '''check filename safety'''
     return '.' in filename and \
@@ -66,6 +66,21 @@ def register():
         sqla.db_insert(newUser)
         return redirect(url_for('upload_file'))
     return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    '''user login'''
+    if request.method == 'POST':
+        ue_pwd = User(request.form['email'], request.form['password'])
+        user = sqla.db_read(ue_pwd)
+        if user:
+            res = make_response(redirect(url_for('upload_file')))
+            res.set_cookie("demucs user", "logged in", max_age=60)
+            return res
+
+        flash('Incorrect username or password')
+        render_template('login.html')
+    return render_template('login.html')
 
 @app.route("/upload", methods=['GET', 'POST'])
 def upload_file():
