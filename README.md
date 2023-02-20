@@ -58,7 +58,7 @@ Host github.com
 1. go to `<ELASTIC_IP>:5000` to test
 
 ### Pre Release Updates
-- password confirmation on registration
+- email should go to signed in user
 - apply DNS
 - don't use flask built in server in PRD - nginx
     - https

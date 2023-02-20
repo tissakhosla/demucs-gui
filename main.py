@@ -16,7 +16,7 @@ from flask import (
 
 import bcrypt
 from werkzeug.utils import secure_filename
-from util import (Track, SqlAction, 
+from util import (Track, SqlAction,
     User, Password, Email
 )
 
@@ -24,7 +24,6 @@ from util import (Track, SqlAction,
 logging.basicConfig(level=logging.INFO)
 
 # initialize Flask App
-
 UPLOAD_FOLDER = '/tmp/uploads'
 ALLOWED_EXTENSIONS = { 'wav', 'mp3' }
 MODELS = [
@@ -35,7 +34,8 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SECRET_KEY'] = os.urandom(12)
 
-# confirm env vars
+# confirm env
+assert os.path.exists(UPLOAD_FOLDER)
 assert os.getenv('G_SMTP')
 assert os.getenv('G_MAIL')
 assert os.getenv('G_KEY')
@@ -69,26 +69,32 @@ def index():
 def register():
     '''create a useremail and password'''
     if request.method == 'POST':
-        em = request.form['email']
+
+        if request.form['password'] != request.form['first-pass']:
+            flash('Passwords do not match')
+            return render_template('register.html')
+
         pwd = Password(request.form['password'])
-        new_user = User(em, pwd.hashpw())
+        new_user = User(request.form['email'], pwd.hashpw())
 
-        if not sqla.db_read(new_user.ue):
-            sqla.db_insert(new_user)
+        if sqla.db_read(new_user.ue):
+            flash(f'{new_user.ue} is already registered')
+            return render_template('register.html')
 
-            subject = 'Demucs-gui registration Successful'
-            body = f'Please see the {request.host}/help section for instructions. \
-                        \nGood shedding, \
-                        \nTissa'
-            em = Email([new_user.ue], f'Subject: {subject}\n\n{body}')
-            em.send()
+        sqla.db_insert(new_user)
 
-            res = make_response(redirect(url_for('upload_file')))
-            res.set_cookie("demucs user", "logged in", max_age=900)
+        subject = 'Demucs-gui registration Successful'
+        body = f'Please see the {request.host}/help section for instructions. \
+                    \nGood shedding, \
+                    \nTissa'
+        em = Email([new_user.ue], f'Subject: {subject}\n\n{body}')
+        em.send()
 
-            return res
+        res = make_response(redirect(url_for('upload_file')))
+        res.set_cookie("demucs user", "logged in", max_age=900)
 
-        flash(f'{em} is already registered')
+        return res
+
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -116,6 +122,7 @@ def upload_file():
     if not request.cookies.get('demucs user'):
         flash('Please login before file upload')
         return redirect(url_for('login'))
+
     server_ip = request.host
     user_ip = request.environ['REMOTE_ADDR']
 
