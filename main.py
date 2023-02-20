@@ -6,15 +6,17 @@ On success, we will send the user an email
 import os
 import logging
 import uuid
-
 from threading import Thread
+
 from flask import (
     Flask, render_template, request, flash,
     redirect, url_for, send_from_directory,
     make_response
 )
+
+import bcrypt
 from werkzeug.utils import secure_filename
-from util import Track, SqlAction, User
+from util import Track, SqlAction, User, Password
 
 # setup logging
 logging.basicConfig(level=logging.INFO)
@@ -65,8 +67,11 @@ def index():
 def register():
     '''create a useremail and password'''
     if request.method == 'POST':
-        newUser = User(request.form['email'], request.form['password'])
-        sqla.db_insert(newUser)
+        em = request.form['email']
+        pwd = Password(request.form['password'])
+        new_user = User(em, pwd.hashpw())
+
+        sqla.db_insert(new_user)
         return redirect(url_for('upload_file'))
     return render_template('register.html')
 
@@ -76,9 +81,11 @@ def login():
     if request.cookies.get('demucs user'):
         return redirect('/upload')
     if request.method == 'POST':
-        ue_pwd = User(request.form['email'], request.form['password'])
-        user = sqla.db_read(ue_pwd)
-        if user:
+        net_pwd = bytes(request.form['password'], 'utf-8')
+        db_user = sqla.db_read(request.form['email'])
+        db_pwd = db_user[0][2]
+
+        if bcrypt.checkpw(net_pwd, db_pwd):
             res = make_response(redirect(url_for('upload_file')))
             res.set_cookie("demucs user", "logged in", max_age=900)
             return res

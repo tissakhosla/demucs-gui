@@ -7,11 +7,23 @@ import shutil
 import logging
 import uuid
 import sqlite3
+import bcrypt
 
 class User:
+    '''handle user info'''
     def __init__(self, useremail, password):
         self.ue = useremail
         self.pwd = password
+
+class Password:
+    '''handle password'''
+    def __init__(self, password):
+        self.pwd = password
+
+    def hashpw(self):
+        return bcrypt.hashpw(
+            bytes(self.pwd, 'utf-8'),
+            bcrypt.gensalt())
 
 class SqlAction:
     '''sql crud'''
@@ -40,13 +52,12 @@ class SqlAction:
         con.commit()
         con.close()
 
-    def db_read(self, user):
+    def db_read(self, em):
         '''return user that logged in'''
         con = sqlite3.connect('users.db')
         cur = con.cursor()
-        cur.execute('''SELECT * FROM users WHERE
-                    username = ? AND password = ?''',
-                    (user.ue, user.pwd))
+        cur.execute(f'SELECT * FROM users WHERE \
+                    username = "{em}"')
         user = cur.fetchall()
         con.commit()
         con.close()

@@ -58,7 +58,7 @@ Host github.com
 1. go to `<ELASTIC_IP>:5000` to test
 
 ### Pre Release Updates
-- hash passwords
+- login upon registration
 - email confirmation for registration
 - send email upon registration
 - apply DNS
@@ -67,6 +67,8 @@ Host github.com
     - use secure flag on cookie w https
     - proxy from nginx to wsgi (gunicorn?)
 - cron backup db
+- secure against SQL injection
+    - hash the username too? 
 
 - make email class
 - create new email address to handle all this
