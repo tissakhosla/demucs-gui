@@ -143,27 +143,3 @@ class Track:
         message = f'Subject: {subject}\n\n{body}'
         mail = Email([self.atts['ue']], message)
         mail.send()
-
-    def message(self):
-        '''build the email message'''
-        subject = f'{self.atts["fn"]} Stems'
-        link = f"http://{self.atts['sip']}/{self.zip}.zip"
-
-        body = f'Download the zip file below to access stems: \
-                \n{link} \
-                \nThanks for using the demucs-gui.'
-
-        return f'Subject: {subject}\n\n{body}'
-
-    def sendmail(self):
-        '''send email'''
-        # Set up the SMTP server
-        server = smtplib.SMTP(os.getenv('G_SMTP'), 587)
-        server.starttls()
-        # Login to the email account
-        me = os.getenv('G_MAIL')
-        server.login(me, os.getenv('G_KEY'))
-        # Build the email
-        server.sendmail(me, [self.atts['ue']], self.message())
-        server.quit()
-        logging.info(' > EMAIL to: %s', self.atts["ue"])

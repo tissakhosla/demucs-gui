@@ -58,9 +58,7 @@ Host github.com
 1. go to `<ELASTIC_IP>:5000` to test
 
 ### Pre Release Updates
-- login upon registration
-- email confirmation for registration
-- send email upon registration
+- password confirmation on registration
 - apply DNS
 - don't use flask built in server in PRD - nginx
     - https
@@ -70,7 +68,6 @@ Host github.com
 - secure against SQL injection
     - hash the username too? 
 
-- make email class
 - create new email address to handle all this
 - cron removal of uploaded tracks
 - cron removal of separated tracks once a week

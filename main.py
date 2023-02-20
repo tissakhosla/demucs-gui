@@ -88,7 +88,7 @@ def register():
 
             return res
 
-        flash('An account with this email already exists')
+        flash(f'{em} is already registered')
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -114,7 +114,7 @@ def login():
 def upload_file():
     '''main route'''
     if not request.cookies.get('demucs user'):
-        flash("please login before file upload")
+        flash('Please login before file upload')
         return redirect(url_for('login'))
     server_ip = request.host
     user_ip = request.environ['REMOTE_ADDR']
