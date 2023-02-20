@@ -57,15 +57,21 @@ Host github.com
 1. in screen 2 - `./listener.sh`
 1. go to `<ELASTIC_IP>:5000` to test
 
-### Updates needed
-- make email class
+### Pre Release Updates
+- hash passwords
+- email confirmation for registration
 - send email upon registration
-- use secure flag on cookie w https
-- hash passwords - very important!
+- apply DNS
+- don't use flask built in server in PRD - nginx
+    - https
+    - use secure flag on cookie w https
+    - proxy from nginx to wsgi (gunicorn?)
+- cron backup db
+
+- make email class
 - create new email address to handle all this
-- Get DNS
+- cron removal of uploaded tracks
 - cron removal of separated tracks once a week
 - upload completed files to S3 with [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
-- don't use flask built in server in PRD
-- SSL
 - Figure out cost spread w Sukhi
+- style flash messages better

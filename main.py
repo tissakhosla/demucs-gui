@@ -84,7 +84,6 @@ def login():
             return res
 
         flash('Incorrect username or password')
-        render_template('login.html')
     return render_template('login.html')
 
 @app.route("/upload", methods=['GET', 'POST'])
