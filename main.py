@@ -16,7 +16,9 @@ from flask import (
 
 import bcrypt
 from werkzeug.utils import secure_filename
-from util import Track, SqlAction, User, Password
+from util import (Track, SqlAction, 
+    User, Password, Email
+)
 
 # setup logging
 logging.basicConfig(level=logging.INFO)
@@ -54,7 +56,7 @@ def process(a):
     t.demucs()
     t.isdir()
     t.zippit()
-    t.sendmail()
+    t.track_email()
 
 @app.route("/")
 def index():
@@ -71,8 +73,22 @@ def register():
         pwd = Password(request.form['password'])
         new_user = User(em, pwd.hashpw())
 
-        sqla.db_insert(new_user)
-        return redirect(url_for('upload_file'))
+        if not sqla.db_read(new_user.ue):
+            sqla.db_insert(new_user)
+
+            subject = 'Demucs-gui registration Successful'
+            body = f'Please see the {request.host}/help section for instructions. \
+                        \nGood shedding, \
+                        \nTissa'
+            em = Email([new_user.ue], f'Subject: {subject}\n\n{body}')
+            em.send()
+
+            res = make_response(redirect(url_for('upload_file')))
+            res.set_cookie("demucs user", "logged in", max_age=900)
+
+            return res
+
+        flash('An account with this email already exists')
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -83,12 +99,13 @@ def login():
     if request.method == 'POST':
         net_pwd = bytes(request.form['password'], 'utf-8')
         db_user = sqla.db_read(request.form['email'])
-        db_pwd = db_user[0][2]
+        if db_user:
+            db_pwd = db_user[0][2]
 
-        if bcrypt.checkpw(net_pwd, db_pwd):
-            res = make_response(redirect(url_for('upload_file')))
-            res.set_cookie("demucs user", "logged in", max_age=900)
-            return res
+            if bcrypt.checkpw(net_pwd, db_pwd):
+                res = make_response(redirect(url_for('upload_file')))
+                res.set_cookie("demucs user", "logged in", max_age=900)
+                return res
 
         flash('Incorrect username or password')
     return render_template('login.html')

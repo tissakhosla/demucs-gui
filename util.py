@@ -25,6 +25,22 @@ class Password:
             bytes(self.pwd, 'utf-8'),
             bcrypt.gensalt())
 
+class Email:
+    '''handle emails'''
+    def __init__(self, to, message):
+        # Set up the SMTP server
+        self.server = smtplib.SMTP(os.getenv('G_SMTP'), 587)
+        self.me = os.getenv('G_MAIL')
+        self.to = to
+        self.message = message
+        self.server.starttls()
+        self.server.login(self.me, os.getenv('G_KEY'))
+
+    def send(self):
+        self.server.sendmail(self.me, self.to, self.message)
+        self.server.quit()
+        logging.info(' > EMAIL to: %s', self.to)
+
 class SqlAction:
     '''sql crud'''
     def __init__(self, tbl):
@@ -115,6 +131,18 @@ class Track:
         shutil.make_archive( self.zip, 'zip', self.filedir )
 
         logging.info(' > ZIPPED: %s', f'{zipdir}')
+
+    def track_email(self):
+        '''send track email'''
+        subject = f'{self.atts["fn"]} Stems'
+        link = f"http://{self.atts['sip']}/{self.zip}.zip"
+        body = f'Download the zip file below to access stems: \
+                \n{link} \
+                \nThanks for using the demucs-gui.'
+
+        message = f'Subject: {subject}\n\n{body}'
+        mail = Email([self.atts['ue']], message)
+        mail.send()
 
     def message(self):
         '''build the email message'''
