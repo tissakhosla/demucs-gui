@@ -48,35 +48,41 @@ class SqlAction:
 
     def db_createTable(self):
         '''create the initial table'''
-        con = sqlite3.connect(self.tbl, check_same_thread=False)
-        cur = con.cursor()
-        sqlcmd = '''CREATE TABLE IF NOT EXISTS users
-                    (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                    username TEXT NOT NULL, 
-                    password TEXT NOT NULL)'''
-        cur.execute(sqlcmd)
-        con.commit()
-        con.close()
+        con = sqlite3.connect(self.tbl)
+        try:
+            cur = con.cursor()
+            sqlcmd = '''CREATE TABLE IF NOT EXISTS users
+                        (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                        username TEXT NOT NULL, 
+                        password TEXT NOT NULL)'''
+            cur.execute(sqlcmd)
+            con.commit()
+        finally:
+            con.close()
 
     def db_insert(self, user):
         '''insert a new user'''
         con = sqlite3.connect('users.db')
-        cur = con.cursor()
-        cur.execute('''INSERT INTO users
-                    (username, password) VALUES (?, ?)''',
-                    (user.ue, user.pwd))
-        con.commit()
-        con.close()
+        try:
+            cur = con.cursor()
+            cur.execute('''INSERT INTO users
+                        (username, password) VALUES (?, ?)''',
+                        (user.ue, user.pwd))
+            con.commit()
+        finally:
+            con.close()
 
     def db_read(self, em):
         '''return user that logged in'''
         con = sqlite3.connect('users.db')
-        cur = con.cursor()
-        cur.execute(f'SELECT * FROM users WHERE \
-                    username = "{em}"')
-        user = cur.fetchall()
-        con.commit()
-        con.close()
+        try:
+            cur = con.cursor()
+            cur.execute('''SELECT * FROM users WHERE
+                        username = ?''', (em, ))
+            user = cur.fetchall()
+            con.commit()
+        finally:
+            con.close()
         return user
 
 class Track:

@@ -58,7 +58,7 @@ Host github.com
 1. go to `<ELASTIC_IP>:5000` to test
 
 ### Pre Release Updates
-- prepared SQL
+
 - apply DNS
 - don't use flask built in server in PRD - nginx
     - https
@@ -68,6 +68,7 @@ Host github.com
 - secure against SQL injection
     - hash the username too? 
 
+- Security
 - Create Test Cases
     - login
         - create
