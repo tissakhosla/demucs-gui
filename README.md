@@ -58,6 +58,7 @@ Host github.com
 1. go to `<ELASTIC_IP>:5000` to test
 
 ### Pre Release Updates
+- prepared SQL
 - apply DNS
 - don't use flask built in server in PRD - nginx
     - https
@@ -66,6 +67,18 @@ Host github.com
 - cron backup db
 - secure against SQL injection
     - hash the username too? 
+
+- Create Test Cases
+    - login
+        - create
+            - new user
+            - user already exists
+        - read
+            - sign in
+            - wrong username
+            - wrong password
+        - update
+        - delete
 
 - reset password/delete user and remake
 - email should go to signed in user
