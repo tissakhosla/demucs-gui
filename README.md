@@ -59,16 +59,15 @@ Host github.com
 
 ### Pre Release Updates
 
-- apply DNS
 - don't use flask built in server in PRD - nginx
+    - proxy from nginx to wsgi (gunicorn?)
     - https
     - use secure flag on cookie w https
-    - proxy from nginx to wsgi (gunicorn?)
+- apply DNS
 - cron backup db
-- secure against SQL injection
-    - hash the username too? 
 
 - Security
+    - secure against SQL injection
 - Create Test Cases
     - login
         - create
