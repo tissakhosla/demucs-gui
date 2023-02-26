@@ -80,6 +80,7 @@ Host github.com
         - update
         - delete
 
+- assert listener is running
 - reset password/delete user and remake
 - email should go to signed in user
 - create new email address to handle all this

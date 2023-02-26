@@ -39,6 +39,7 @@ assert os.path.exists(UPLOAD_FOLDER)
 assert os.getenv('G_SMTP')
 assert os.getenv('G_MAIL')
 assert os.getenv('G_KEY')
+# TODO: assert ./listener is running
 
 # initialize DB
 sqla = SqlAction("users.db")
@@ -195,3 +196,6 @@ def _help():
 @app.route('/license')
 def _license():
     return render_template('license.html')
+
+if __name__ == "__main__":
+    app.run()
