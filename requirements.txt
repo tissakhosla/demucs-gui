@@ -4,3 +4,4 @@ pylint
 bcrypt
 flask
 demucs
+gunicorn
