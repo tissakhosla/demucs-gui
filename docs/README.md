@@ -82,12 +82,107 @@ server {
         }
 }
 ```
-36. `sudo vim /etc/nginx/sites-available/default` and in the appropriate area add to it
+36. `sudo vim /etc/nginx/sites-available/default` add the following in the location block
 ```
 include proxy_params;
 proxy_pass http://unix:/tmp/demucs.sock;
 ```
-37. `sudo ln -s /etc/nginx/sites-available/demucs /etc/nginx/sites-enabled`
+37. add `client_max_body_size 10000M;` to the end of the `server{}` block as well.
+1. `sudo ln -s /etc/nginx/sites-available/demucs /etc/nginx/sites-enabled`
 1. `sudo ufw enable`
 1. `sudo ufw allow ssh`
 1. `sudo ufw allow 'Nginx HTTP'`
+1. Setup SSL - followed [Digital Ocean tutorial](https://www.digitalocean.com/community/tutorials/how-to-create-a-self-signed-ssl-certificate-for-nginx-in-ubuntu-22-04)
+1. `sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned-demucs.key -out /etc/ssl/certs/nginx-selfsigned-demucs.crt`
+1. `sudo openssl dhparam -out /etc/nginx/dhparam.pem 4096`
+1. `sudo vi /etc/nginx/snippets/self-signed-demucs.conf` and add to it
+```
+ssl_certificate /etc/ssl/certs/nginx-selfsigned-demucs.crt;
+ssl_certificate_key /etc/ssl/private/nginx-selfsigned-demucs.key;
+```
+46. `sudo vi /etc/nginx/snippets/ssl-params.conf` and add to it
+```
+ssl_protocols TLSv1.3;
+ssl_prefer_server_ciphers on;
+ssl_dhparam /etc/nginx/dhparam.pem;
+ssl_ciphers EECDH+AESGCM:EDH+AESGCM;
+ssl_ecdh_curve secp384r1;
+ssl_session_timeout  10m;
+ssl_session_cache shared:SSL:10m;
+ssl_session_tickets off;
+ssl_stapling on;
+ssl_stapling_verify on;
+resolver 8.8.8.8 8.8.4.4 valid=300s;
+resolver_timeout 5s;
+# Disable strict transport security for now. You can uncomment the following
+# line if you understand the implications.
+#add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
+add_header X-Frame-Options DENY;
+add_header X-Content-Type-Options nosniff;
+add_header X-XSS-Protection "1; mode=block";
+```
+47. `screen`
+1. `sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak`
+1. `sudo vi /etc/nginx/sites-available/default`
+1. uncomment the following lines and add the includes below them
+```
+listen 443 ssl default_server;
+listen [::]:443 ssl default_server;
+include snippets/self-signed-demucs.conf;
+include snippets/ssl-params.conf;
+```
+51. `sudo ufw allow 'Nginx HTTPS'`
+1. `sudo ufw status verbose` should say something like
+```
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), disabled (routed)
+New profiles: skip
+
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW IN    Anywhere
+80/tcp (Nginx HTTP)        ALLOW IN    Anywhere
+443/tcp (Nginx HTTPS)      ALLOW IN    Anywhere
+22/tcp (v6)                ALLOW IN    Anywhere (v6)
+80/tcp (Nginx HTTP (v6))   ALLOW IN    Anywhere (v6)
+443/tcp (Nginx HTTPS (v6)) ALLOW IN    Anywhere (v6)
+```
+53. `sudo nginx -t` should say
+```
+nginx: [warn] "ssl_stapling" ignored, issuer certificate not found for certificate "/etc/ssl/certs/nginx-selfsigned-demucs.crt"
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+```
+54. `sudo systemctl restart nginx`
+1. Allow Port 443 in AWS security Group
+1. Point DNS
+1. `sudo vi /etc/nginx/sites-available/default`
+1. comment the following lines and add the includes below them
+```
+#       listen 80 default_server;
+#       listen [::]:80 default_server;
+```
+59. `sudo ufw delete allow 'Nginx HTTP'`
+1. `sudo ufw status verbose` should now say
+```
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), disabled (routed)
+New profiles: skip
+
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW IN    Anywhere
+443/tcp (Nginx HTTPS)      ALLOW IN    Anywhere
+22/tcp (v6)                ALLOW IN    Anywhere (v6)
+443/tcp (Nginx HTTPS (v6)) ALLOW IN    Anywhere (v6)
+```
+61. Remove port 80 from AWS security Group
+1. Buy Certificate from GoDaddy and Download Zip File
+1. put key and crt in appropriate directories and adjust .conf file and nginx default file appropriately
+1. `screen`
+1. screen 1 - `./listener.sh`
+1. screen 2 - `sudo journalctl -u demucs -f`
+1. screen 3 - `tail -F /var/log/nginx/error.log`
+1. screen 4 - `tail -F /var/log/nginx/access.log`

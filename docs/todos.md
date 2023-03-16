@@ -1,12 +1,14 @@
 ## TODOs
+- downloads if I copy and paste the link, but not if I click
+- when DNS and https is happening, update link in email
 
 ### Pre Release Updates
-- don't use flask built in server in PRD - nginx
-    - proxy from nginx to wsgi (gunicorn?)
-    - https
-    - use secure flag on cookie w https
-- apply DNS
+- 413 Request Entity Too Large - update nginx default file to take in large files
+- listener has to use demucs command from env! activate within env+screen for now
+- use secure flag on cookie w https
 - cron backup db
+- fix links in email to go to https
+- add http redirect
 
 - Create Test Cases
     - login
