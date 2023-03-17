@@ -92,7 +92,7 @@ def register():
         em.send()
 
         res = make_response(redirect(url_for('upload_file')))
-        res.set_cookie("demucs user", "logged in", max_age=900)
+        res.set_cookie("demucs user", "logged in", max_age=900, secure=True)
 
         return res
 

@@ -1,14 +1,12 @@
 ## TODOs
 - downloads if I copy and paste the link, but not if I click
-- when DNS and https is happening, update link in email
 
 ### Pre Release Updates
-- 413 Request Entity Too Large - update nginx default file to take in large files
-- listener has to use demucs command from env! activate within env+screen for now
+- listener has to use demucs command from env!
+    -   open `screen`, activate env
 - use secure flag on cookie w https
 - cron backup db
 - fix links in email to go to https
-- add http redirect
 
 - Create Test Cases
     - login
@@ -23,6 +21,8 @@
         - delete
 
 ### Post Release Updates
+- add http redirect
+ - more info on the listener log
 - Security
     - secure and test against SQL injection
 - assert ffmpeg is installed?

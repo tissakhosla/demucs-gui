@@ -141,7 +141,7 @@ class Track:
     def track_email(self):
         '''send track email'''
         subject = f'{self.atts["fn"]} Stems'
-        link = f"http://{self.atts['sip']}/{self.zip}.zip"
+        link = f"https://{self.atts['sip']}/{self.zip}.zip"
         body = f'Download the zip file below to access stems: \
                 \n{link} \
                 \nThanks for using the demucs-gui.'
