@@ -20,6 +20,8 @@ from util import (Track, SqlAction,
     User, Password, Email
 )
 
+from pay import Payment
+
 # setup logging
 logging.basicConfig(level=logging.INFO)
 
@@ -196,6 +198,12 @@ def _help():
 @app.route('/license')
 def _license():
     return render_template('license.html')
+
+@app.route('/subscribe')
+def _license():
+    p = Payment()
+    print(p.get_token())
+    return render_template('subscribe.html')
 
 if __name__ == "__main__":
     app.run()
