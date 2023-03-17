@@ -4,9 +4,7 @@
 ### Pre Release Updates
 - listener has to use demucs command from env!
     -   open `screen`, activate env
-- use secure flag on cookie w https
 - cron backup db
-- fix links in email to go to https
 
 - Create Test Cases
     - login
