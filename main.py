@@ -200,9 +200,9 @@ def _license():
     return render_template('license.html')
 
 @app.route('/subscribe')
-def _license():
+def _subscribe():
     p = Payment()
-    print(p.get_token())
+    print(p)
     return render_template('subscribe.html')
 
 if __name__ == "__main__":
