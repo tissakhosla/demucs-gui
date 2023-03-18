@@ -87,6 +87,19 @@ class SqlAction:
             con.close()
         return user
 
+    def db_subscription(self, em, subid):
+        '''set new subscription id for user'''
+        con = sqlite3.connect('users.db')
+        try:
+            cur = con.cursor()
+            cur.execute('''UPDATE users
+                        SET subscription = ? 
+                        WHERE username = ?''',
+                        (subid, em))
+            con.commit()
+        finally:
+            con.close()
+
 class Track:
     '''process track and send email'''
     def __init__(self, attributes):

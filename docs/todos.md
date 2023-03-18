@@ -5,7 +5,10 @@
 - listener has to use demucs command from env!
     -   open `screen`, activate env
 - cron backup db
-
+- logout button
+- change password
+- figure out reactivation status change? or its just a new scription
+- add logged in as: to base
 - Create Test Cases
     - login
         - create

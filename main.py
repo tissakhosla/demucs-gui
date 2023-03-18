@@ -111,7 +111,7 @@ def login():
     if request.method == 'POST':
         net_pwd = bytes(request.form['password'], 'utf-8')
         db_user = sqla.db_read(request.form['email'])
-        
+
         if db_user:
             db_pwd = db_user[0][2]
 
@@ -126,14 +126,23 @@ def login():
 @app.route("/upload", methods=['GET', 'POST'])
 def upload_file():
     '''main route'''
-    
+
     if not request.cookies.get('demucs user'):
         flash('Please login before file upload')
         return redirect(url_for('login'))
 
-    # if not sqla.db_read(request.cookies.get('demucs user'))[0][3]:
-    #     flash('Please subscribe before file upload')
-    #     return redirect(url_for('_subscribe'))
+    if not sqla.db_read(request.cookies.get('demucs user'))[0][3]:
+        flash('Please subscribe before file upload')
+        return redirect(url_for('_subscribe'))
+
+    p = Payment()
+    p.get_token()
+    status = p.is_sub_active(
+        sqla.db_read(request.cookies.get('demucs user'))[0][3])
+
+    if status['status'] != 'ACTIVE':
+        flash('Please reactivate subscription')
+        return redirect(url_for('_subscribe'))
 
     server_ip = request.host
     user_ip = request.environ['REMOTE_ADDR']
@@ -210,6 +219,10 @@ def _license():
 
 @app.route('/subscribe')
 def _subscribe():
+    if not request.cookies.get('demucs user'):
+        flash('Please login before subscribing')
+        return redirect(url_for('login'))
+
     p = Payment()
     p.get_token()
     p.get_plans()
@@ -218,6 +231,17 @@ def _subscribe():
     src = f'https://www.paypal.com/sdk/js?client-id={client}&vault=true&intent=subscription'
 
     return render_template('subscribe.html', pid=plan_id, src=src)
+
+@app.route('/sub-id', methods=['POST'])
+def _save_sub_id():
+    if request.method == 'POST':
+        sqla.db_subscription(
+            request.cookies.get('demucs user'),
+            request.form['subscription_id']
+        )
+
+        return redirect(url_for('upload_file'))
+    return redirect(url_for('index'))
 
 if __name__ == "__main__":
     app.run()

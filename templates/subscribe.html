@@ -7,7 +7,9 @@
 </script>
 
 <div id="paypal-button-container"></div>
-
+<form id="subscription-form" method="POST" action="{{ url_for('_save_sub_id') }}">
+    <input type="hidden" name="subscription_id" id="subscription-id">
+</form>
 <script>
     paypal.Buttons({
         createSubscription: function (data, actions) {
@@ -16,7 +18,12 @@
             });
         },
         onApprove: function (data, actions) {
-            alert('You have successfully created subscription ' + data.subscriptionID); // Optional message given to subscriber
+            alert('You have successfully created subscription '
+                + data.subscriptionID); // Optional message given to subscriber
+            const sub = data.subscriptionID;
+            console.dir(sub)
+            document.getElementById('subscription-id').value = sub;
+            document.getElementById('subscription-form').submit();
         }
     }).render('#paypal-button-container'); // Renders the PayPal button
 </script>

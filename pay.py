@@ -20,6 +20,7 @@ class Payment:
         self.products = None
         self.prod_id = None
         self.plan_id = None
+        self.sub_detail = None
 
     # CREATE
     def create_billing(self):
@@ -133,3 +134,18 @@ class Payment:
         )
 
         self.products = response
+
+    def is_sub_active(self, sid):
+        '''get details regarding a subscription'''
+
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.access_token}'
+        }
+
+        response = call(
+            f'{self.base_url}/v1/billing/subscriptions/{sid}',
+            headers=headers
+        )
+
+        return response
