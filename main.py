@@ -96,7 +96,7 @@ def register():
         em = Email([new_user.ue], f'Subject: {subject}\n\n{body}')
         em.send()
 
-        res = make_response(redirect(url_for('upload_file')))
+        res = make_response(redirect(url_for('_subscribe')))
         res.set_cookie("demucs user", new_user.ue, max_age=900, secure=True)
 
         return res
