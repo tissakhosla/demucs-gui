@@ -13,9 +13,9 @@ def call(url, method='GET', body=None, headers=None):
     http = Http()
 
     resp, pbody = http.request(url, method, body=qbody, headers=headers)
-    print(resp)
-    print('-----------------')
-    print(pbody)
+    # print(resp)
+    # print('-----------------')
+    # print(pbody)
     if pbody:
         pbody = json.loads(pbody.decode())
 

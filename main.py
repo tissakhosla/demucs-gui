@@ -62,6 +62,8 @@ def process(a):
     t.zippit()
     t.track_email()
 
+
+
 @app.route("/")
 def index():
     '''check if user is logged in'''
@@ -79,7 +81,7 @@ def register():
             return render_template('register.html')
 
         pwd = Password(request.form['password'])
-        new_user = User(request.form['email'], pwd.hashpw())
+        new_user = User(request.form['email'], pwd.hashpw(), None)
 
         if sqla.db_read(new_user.ue):
             flash(f'{new_user.ue} is already registered')
@@ -95,7 +97,7 @@ def register():
         em.send()
 
         res = make_response(redirect(url_for('upload_file')))
-        res.set_cookie("demucs user", "logged in", max_age=900, secure=True)
+        res.set_cookie("demucs user", new_user.ue, max_age=900, secure=True)
 
         return res
 
@@ -109,12 +111,13 @@ def login():
     if request.method == 'POST':
         net_pwd = bytes(request.form['password'], 'utf-8')
         db_user = sqla.db_read(request.form['email'])
+        
         if db_user:
             db_pwd = db_user[0][2]
 
             if bcrypt.checkpw(net_pwd, db_pwd):
                 res = make_response(redirect(url_for('upload_file')))
-                res.set_cookie("demucs user", "logged in", max_age=900)
+                res.set_cookie("demucs user", db_user[0][1], max_age=900)
                 return res
 
         flash('Incorrect username or password')
@@ -123,9 +126,14 @@ def login():
 @app.route("/upload", methods=['GET', 'POST'])
 def upload_file():
     '''main route'''
+    
     if not request.cookies.get('demucs user'):
         flash('Please login before file upload')
         return redirect(url_for('login'))
+
+    # if not sqla.db_read(request.cookies.get('demucs user'))[0][3]:
+    #     flash('Please subscribe before file upload')
+    #     return redirect(url_for('_subscribe'))
 
     server_ip = request.host
     user_ip = request.environ['REMOTE_ADDR']

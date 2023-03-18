@@ -11,9 +11,10 @@ import bcrypt
 
 class User:
     '''handle user info'''
-    def __init__(self, useremail, password):
+    def __init__(self, useremail, password, subscription):
         self.ue = useremail
         self.pwd = password
+        self.sub = subscription
 
 class Password:
     '''handle password'''
@@ -54,7 +55,8 @@ class SqlAction:
             sqlcmd = '''CREATE TABLE IF NOT EXISTS users
                         (id INTEGER PRIMARY KEY AUTOINCREMENT, 
                         username TEXT NOT NULL, 
-                        password TEXT NOT NULL)'''
+                        password TEXT NOT NULL,
+                        subscription TEXT)'''
             cur.execute(sqlcmd)
             con.commit()
         finally:
