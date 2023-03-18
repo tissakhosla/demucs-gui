@@ -2,5 +2,21 @@
 {% block title %}Upload{% endblock %}
 
 {% block body %}
-    SUBSCRIBE!!
+<script src='{{ src }}'>
+</script>
+
+<div id="paypal-button-container"></div>
+
+<script>
+    paypal.Buttons({
+        createSubscription: function (data, actions) {
+            return actions.subscription.create({
+                'plan_id': '{{ pid }}' // Creates the subscription
+            });
+        },
+        onApprove: function (data, actions) {
+            alert('You have successfully created subscription ' + data.subscriptionID); // Optional message given to subscriber
+        }
+    }).render('#paypal-button-container'); // Renders the PayPal button
+</script>
 {% endblock %}

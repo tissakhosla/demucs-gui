@@ -41,6 +41,7 @@ assert os.path.exists(UPLOAD_FOLDER)
 assert os.getenv('G_SMTP')
 assert os.getenv('G_MAIL')
 assert os.getenv('G_KEY')
+assert os.getenv('P_CLIENT')
 # TODO: assert ./listener is running
 
 # initialize DB
@@ -202,8 +203,13 @@ def _license():
 @app.route('/subscribe')
 def _subscribe():
     p = Payment()
-    print(p)
-    return render_template('subscribe.html')
+    p.get_token()
+    p.get_plans()
+    plan_id = p.plans['plans'][0]['id']
+    client = os.getenv('P_CLIENT')
+    src = f'https://www.paypal.com/sdk/js?client-id={client}&vault=true&intent=subscription'
+
+    return render_template('subscribe.html', pid=plan_id, src=src)
 
 if __name__ == "__main__":
     app.run()
