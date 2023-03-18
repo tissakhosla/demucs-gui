@@ -13,16 +13,13 @@ def call(url, method='GET', body=None, headers=None):
     http = Http()
 
     resp, pbody = http.request(url, method, body=qbody, headers=headers)
-    # print(resp)
-    # print('-----------------')
-    # print(pbody)
+
     if pbody:
         pbody = json.loads(pbody.decode())
 
-    # if resp.status != 200 or resp.status != 201:
+    if resp.status not in (200,201):
+        logging.fatal('!! %d: %s', resp.status, pbody)
 
-        # logging.fatal('!! %d: %s', resp.status, pbody)
-
-    # assert resp.status == 200
+    assert resp.status in (200,201)
 
     return pbody

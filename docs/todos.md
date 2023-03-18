@@ -2,6 +2,7 @@
 - downloads if I copy and paste the link, but not if I click
 
 ### Pre Release Updates
+- sign in and then subscribe? let users know they are going to need to pay 6$
 - listener has to use demucs command from env!
     -   open `screen`, activate env
 - cron backup db

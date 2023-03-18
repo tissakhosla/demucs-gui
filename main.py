@@ -108,6 +108,7 @@ def login():
     '''user login'''
     if request.cookies.get('demucs user'):
         return redirect('/upload')
+
     if request.method == 'POST':
         net_pwd = bytes(request.form['password'], 'utf-8')
         db_user = sqla.db_read(request.form['email'])
@@ -187,7 +188,9 @@ def upload_file():
                 dm=demucsmodel,
                 of=outputformat))
 
-    return render_template('upload.html', models=MODELS)
+    return render_template('upload.html',
+                        models=MODELS,
+                        login=request.cookies.get('demucs user'))
 
 @app.route('/success')
 def success():
@@ -203,7 +206,11 @@ def success():
     _process = Thread(target=process, args=(atts,))
     _process.start()
 
-    return render_template('success.html', ue=atts['ue'], fn=atts['fn'])
+    return render_template(
+        'success.html',
+        ue=atts['ue'],
+        fn=atts['fn'],
+        login=request.cookies.get('demucs user'))
 
 @app.route('/zips/<path:filename>')
 def serve_zip(filename):
@@ -211,11 +218,13 @@ def serve_zip(filename):
 
 @app.route('/help')
 def _help():
-    return render_template('help.html')
+    return render_template('help.html',
+            login=request.cookies.get('demucs user'))
 
 @app.route('/license')
 def _license():
-    return render_template('license.html')
+    return render_template('license.html',
+            login=request.cookies.get('demucs user'))
 
 @app.route('/subscribe')
 def _subscribe():
