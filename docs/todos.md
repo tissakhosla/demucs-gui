@@ -2,7 +2,6 @@
 - downloads if I copy and paste the link, but not if I click?
 
 ### Pre Release Updates
-- add subscription status to DB and update on login, display in user-status
 - cron backup db
 - Create Test Cases
     - login
