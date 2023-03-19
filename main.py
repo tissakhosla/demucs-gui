@@ -100,16 +100,10 @@ def register():
         res.set_cookie("demucs user", new_user.ue, max_age=900, secure=True)
 
         return res
-    # if sqla.db_read(request.cookies.get('demucs user'))[0][3]:
-    #     p = Payment()
-    #     p.get_token()
-    #     status = p.is_sub_active(
-    #         sqla.db_read(request.cookies.get('demucs user'))[0][3])
-    #     stat=status['status']
-    # else:
-    #     stat=None
 
-    return render_template('register.html', login=request.cookies.get('demucs user'))
+    return render_template(
+                'register.html',
+                login=request.cookies.get('demucs user'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -125,6 +119,13 @@ def login():
             db_pwd = db_user[0][2]
 
             if bcrypt.checkpw(net_pwd, db_pwd):
+                stat = sqla.db_read(db_user[0][1])[0][3]
+                if stat:
+                    p = Payment()
+                    p.get_token()
+                    stat = p.get_sub_status(
+                        sqla.db_read(db_user[0][1])[0][3])
+
                 res = make_response(redirect(url_for('upload_file')))
                 res.set_cookie("demucs user", db_user[0][1], max_age=900)
                 return res
@@ -148,16 +149,8 @@ def upload_file():
         flash('please login')
         return redirect(url_for('login'))
 
-    if not sqla.db_read(request.cookies.get('demucs user'))[0][3]:
-        return redirect(url_for('_subscribe'))
-
-    p = Payment()
-    p.get_token()
-    status = p.is_sub_active(
-        sqla.db_read(request.cookies.get('demucs user'))[0][3])
-
-    if status['status'] != 'ACTIVE':
-        flash('please reactivate subscription')
+    if not sqla.db_read(request.cookies.get('demucs user'))[0][4]:
+        print("why")
         return redirect(url_for('_subscribe'))
 
     server_ip = request.host
@@ -205,7 +198,8 @@ def upload_file():
 
     return render_template('upload.html',
                         models=MODELS,
-                        login=request.cookies.get('demucs user'))
+                        login=request.cookies.get('demucs user'),
+                        substat=sqla.db_read(request.cookies.get('demucs user'))[0][4])
 
 @app.route('/success')
 def success():
@@ -225,7 +219,8 @@ def success():
         'success.html',
         ue=atts['ue'],
         fn=atts['fn'],
-        login=request.cookies.get('demucs user'))
+        login=request.cookies.get('demucs user'),
+        substat=sqla.db_read(request.cookies.get('demucs user'))[0][4])
 
 @app.route('/zips/<path:filename>')
 def serve_zip(filename):
@@ -233,20 +228,40 @@ def serve_zip(filename):
 
 @app.route('/help')
 def _help():
+    if request.cookies.get('demucs user'):
+        substat = sqla.db_read(request.cookies.get('demucs user'))[0][4]
+    else: 
+        substat = None
     return render_template('help.html',
-            login=request.cookies.get('demucs user'),)
+            login=request.cookies.get('demucs user'),
+            substat=substat)
 
 @app.route('/license')
 def _license():
+    if request.cookies.get('demucs user'):
+        substat = sqla.db_read(request.cookies.get('demucs user'))[0][4]
+    else: 
+        substat = None
     return render_template('license.html',
-            login=request.cookies.get('demucs user'))
+            login=request.cookies.get('demucs user'),
+            substat=substat)
 
 @app.route('/subscribe')
 def _subscribe():
     if not request.cookies.get('demucs user'):
-        flash('please login before subscribing')
+        flash('please login/register before subscribing')
         return redirect(url_for('login'))
 
+    if request.cookies.get('demucs user'):
+        substat = sqla.db_read(request.cookies.get('demucs user'))[0][4]
+        print(substat)
+        if substat == 'ACTIVE':
+            flash('already subscribed!')
+            print('yes')
+            redirect(url_for('upload_file'))
+    else: 
+        substat = None
+    
     p = Payment()
     p.get_token()
     p.get_plans()
@@ -257,15 +272,24 @@ def _subscribe():
     return render_template('subscribe.html',
                 pid=plan_id,
                 src=src,
-                login=request.cookies.get('demucs user'),)
+                login=request.cookies.get('demucs user'),
+                substat=substat)
 
 @app.route('/sub-id', methods=['POST'])
-def _save_sub_id():
+def _save_sub():
     if request.method == 'POST':
         sqla.db_subscription(
             request.cookies.get('demucs user'),
             request.form['subscription_id']
         )
+
+        p = Payment()
+        p.get_token()
+        stat = p.get_sub_status(
+            sqla.db_read(request.cookies.get('demucs user'))[0][3])
+        sqla.db_update_sub_stat(
+            request.cookies.get('demucs user'),
+            stat)
 
         return redirect(url_for('upload_file'))
     return redirect(url_for('index'))
@@ -302,7 +326,7 @@ def reset_password():
         return redirect(url_for('login'))
 
     if request.args.get('u_token') == \
-        sqla.db_read(request.args.get('u_em'))[0][4]:
+        sqla.db_read(request.args.get('u_em'))[0][5]:
 
         if request.method == 'POST':
             if request.form['password'] != request.form['first-pass']:

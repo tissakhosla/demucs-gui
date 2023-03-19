@@ -10,12 +10,7 @@
 </head>
 <header>
     <h1>demucs gui</h1>
-    {% if login: %}
-        <div class="user-status">
-            <p>user: <span>{{ login }}</span></p>
-            <p>subscription: <span>{{ substat }}</span></p>
-        </div>
-    {% endif %}
+    {% include 'cmp-userstats.html' %}
 </header>
 
 <body>

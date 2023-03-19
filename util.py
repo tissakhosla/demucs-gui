@@ -12,10 +12,10 @@ import bcrypt
 
 class User:
     '''handle user info'''
-    def __init__(self, useremail, password, subscription):
+    def __init__(self, useremail, password, sub_id):
         self.ue = useremail
         self.pwd = password
-        self.sub = subscription
+        self.sub = sub_id
 
 class Password:
     '''handle password'''
@@ -60,7 +60,8 @@ class SqlAction:
                         (id INTEGER PRIMARY KEY AUTOINCREMENT, 
                         username TEXT NOT NULL, 
                         password TEXT NOT NULL,
-                        subscription TEXT,
+                        sub_id TEXT,
+                        sub_status TEXT,
                         resettoken TEXT)'''
             cur.execute(sqlcmd)
             con.commit()
@@ -104,6 +105,19 @@ class SqlAction:
             con.commit()
         finally:
             con.close()
+    
+    def db_update_sub_stat(self, em, status):
+        '''update user subscription status'''
+        con = sqlite3.connect('users.db')
+        try:
+            cur = con.cursor()
+            cur.execute('''UPDATE users
+                        SET sub_status = ? 
+                        WHERE username = ?''',
+                        (status, em))
+            con.commit()
+        finally:
+            con.close()
 
     def db_subscription(self, em, subid):
         '''set new subscription id for user'''
@@ -111,7 +125,7 @@ class SqlAction:
         try:
             cur = con.cursor()
             cur.execute('''UPDATE users
-                        SET subscription = ? 
+                        SET sub_id = ? 
                         WHERE username = ?''',
                         (subid, em))
             con.commit()

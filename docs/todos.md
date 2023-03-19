@@ -2,14 +2,8 @@
 - downloads if I copy and paste the link, but not if I click?
 
 ### Pre Release Updates
-- sign in and then subscribe? let users know they are going to need to pay 6$
-- forgot email or password
-- terms and conditions - data privacy?
-- listener has to use demucs command from env!
-    -   open `screen`, activate env
-- cron backup db
-- figure out reactivation status change? or its just a new scription
 - add subscription status to DB and update on login, display in user-status
+- cron backup db
 - Create Test Cases
     - login
         - create
@@ -19,10 +13,14 @@
             - sign in
             - wrong username
             - wrong password
+            - subscription status paused
+            - subscription status canceled
         - update
         - delete
 
 ### Post Release Updates
+- listener has to use demucs command from env!
+    -   open `screen`, activate env
 - add http redirect
  - more info on the listener log
 - Security

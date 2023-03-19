@@ -189,3 +189,11 @@ a:hover {
 .user-status span {
     color: var(--blue);
 }
+
+.user-status span.active-sub {
+    color: var(--green);
+}
+
+.user-status span.no-sub {
+    color: var(--red);
+}

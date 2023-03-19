@@ -135,7 +135,7 @@ class Payment:
 
         self.products = response
 
-    def is_sub_active(self, sid):
+    def get_sub_status(self, sid):
         '''get details regarding a subscription'''
 
         headers = {
@@ -148,4 +148,4 @@ class Payment:
             headers=headers
         )
 
-        return response
+        return response['status']

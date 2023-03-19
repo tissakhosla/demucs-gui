@@ -1,0 +1,12 @@
+{% if login: %}
+<div class="user-status">
+    <p>user: <span>{{ login }}</span></p>
+    <p>subscription:
+        {% if substat == 'ACTIVE': %}
+            <span class="active-sub">{{ substat }}</span>
+        {% else: %}
+            <span class="no-sub">{{ substat }}</span>
+        {% endif %}
+    </p>
+</div>
+{% endif %}
