@@ -181,6 +181,7 @@ To                         Action      From
 61. Remove port 80 from AWS security Group
 1. Buy Certificate from GoDaddy and Download Zip File
 1. put key and crt in appropriate directories and adjust .conf file and nginx default file appropriately
+1. 
 1. `screen`
 1. screen 1 - `./listener.sh`
 1. screen 2 - `sudo journalctl -u demucs -f`
