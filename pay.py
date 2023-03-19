@@ -13,6 +13,7 @@ class Payment:
 
         self.client_id = os.getenv('P_CLIENT')
         self.client_secret = os.getenv('P_SECRET')
+        # SANDBOX URL
         self.base_url = 'https://api-m.sandbox.paypal.com'
 
         self.access_token = None
