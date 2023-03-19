@@ -10,7 +10,12 @@
 </head>
 <header>
     <h1>demucs gui</h1>
-    <p style="text-align: right; margin: 0; font-size: 14px">logged in as: {{ login }}</p>
+    {% if login: %}
+        <div class="user-status">
+            <p>user: <span>{{ login }}</span></p>
+            <p>subscription: <span>{{ substat }}</span></p>
+        </div>
+    {% endif %}
 </header>
 
 <body>
@@ -18,7 +23,11 @@
 </body>
 <footer>
     <a href="{{ url_for('upload_file') }}">New File</a> 
-    <a href="{{ url_for('login') }}">Login</a>
+    {% if login: %}
+        <a href="{{ url_for('logout') }}">Logout</a>
+    {% else: %}
+        <a href="{{ url_for('login') }}">Login</a>
+    {% endif %}
     <a href="{{ url_for('_help') }}">Help</a>
     <a href="{{ url_for('_license') }}">License</a>
 </footer>

@@ -169,3 +169,23 @@ a:hover {
     color: var(--red);
     padding: 10px 80px;
 }
+
+.a__new-account {
+    text-align: center;
+    font-size: 22px;
+}
+
+.a__forgot-login {
+    text-align: right;
+    font-size: 16px;
+}
+
+.user-status p {
+    margin: 0;
+    font-size: 14px;
+    text-align: right;
+}
+
+.user-status span {
+    color: var(--blue);
+}

@@ -7,6 +7,7 @@ import shutil
 import logging
 import uuid
 import sqlite3
+import secrets
 import bcrypt
 
 class User:
@@ -25,6 +26,9 @@ class Password:
         return bcrypt.hashpw(
             bytes(self.pwd, 'utf-8'),
             bcrypt.gensalt())
+
+    def generate_toke(self):
+        return secrets.token_urlsafe()
 
 class Email:
     '''handle emails'''
@@ -56,7 +60,8 @@ class SqlAction:
                         (id INTEGER PRIMARY KEY AUTOINCREMENT, 
                         username TEXT NOT NULL, 
                         password TEXT NOT NULL,
-                        subscription TEXT)'''
+                        subscription TEXT,
+                        resettoken TEXT)'''
             cur.execute(sqlcmd)
             con.commit()
         finally:
@@ -87,6 +92,19 @@ class SqlAction:
             con.close()
         return user
 
+    def db_update_pwd(self, em, password):
+        '''update password after reset'''
+        con = sqlite3.connect('users.db')
+        try:
+            cur = con.cursor()
+            cur.execute('''UPDATE users
+                        SET password = ? 
+                        WHERE username = ?''',
+                        (password, em))
+            con.commit()
+        finally:
+            con.close()
+
     def db_subscription(self, em, subid):
         '''set new subscription id for user'''
         con = sqlite3.connect('users.db')
@@ -96,6 +114,32 @@ class SqlAction:
                         SET subscription = ? 
                         WHERE username = ?''',
                         (subid, em))
+            con.commit()
+        finally:
+            con.close()
+
+    def db_passtoke(self, em, token):
+        '''set new token for user to reset pwd'''
+        con = sqlite3.connect('users.db')
+        try:
+            cur = con.cursor()
+            cur.execute('''UPDATE users
+                        SET resettoken = ? 
+                        WHERE username = ?''',
+                        (token, em))
+            con.commit()
+        finally:
+            con.close()
+
+    def db_delete_token(self, em):
+        '''set new token for user to reset pwd'''
+        con = sqlite3.connect('users.db')
+        try:
+            cur = con.cursor()
+            cur.execute('''UPDATE users
+                        SET resettoken = NULL 
+                        WHERE username = ?''',
+                        (em, ))
             con.commit()
         finally:
             con.close()

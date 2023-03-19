@@ -2,7 +2,11 @@
 {% block title %}Login{% endblock %}
 
 {% block body %}
-    {% include 'flash.html' %}
-    {% include 'form-login.html' %}
-    <a href="{{ url_for('register') }}">Create a new account</a>
+{% include 'flash.html' %}
+{% include 'form-login.html' %}
+<a class="a__new-account" href="{{ url_for('register') }}">
+    Create a new account
+    <br>
+    for $6/month
+</a>
 {% endblock %}

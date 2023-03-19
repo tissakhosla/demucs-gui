@@ -1,15 +1,15 @@
 ## TODOs
-- downloads if I copy and paste the link, but not if I click
+- downloads if I copy and paste the link, but not if I click?
 
 ### Pre Release Updates
 - sign in and then subscribe? let users know they are going to need to pay 6$
+- forgot email or password
+- terms and conditions - data privacy?
 - listener has to use demucs command from env!
     -   open `screen`, activate env
 - cron backup db
-- change password
 - figure out reactivation status change? or its just a new scription
-- add logged in as: to base
-- if logged in, change login button to logout
+- add subscription status to DB and update on login, display in user-status
 - Create Test Cases
     - login
         - create

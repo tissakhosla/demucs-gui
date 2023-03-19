@@ -62,13 +62,13 @@ def process(a):
     t.zippit()
     t.track_email()
 
-
-
 @app.route("/")
 def index():
-    '''check if user is logged in'''
+    '''check if user is logged in and subscribed'''
     if request.cookies.get('demucs user'):
-        return redirect('/upload')
+        if sqla.db_read(request.cookies.get('demucs user'))[0][3]:
+            return redirect('/upload')
+        return redirect(url_for('_subscribe'))
     return redirect(url_for('login'))
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -77,7 +77,7 @@ def register():
     if request.method == 'POST':
 
         if request.form['password'] != request.form['first-pass']:
-            flash('Passwords do not match')
+            flash('passwords do not match')
             return render_template('register.html')
 
         pwd = Password(request.form['password'])
@@ -100,8 +100,16 @@ def register():
         res.set_cookie("demucs user", new_user.ue, max_age=900, secure=True)
 
         return res
+    # if sqla.db_read(request.cookies.get('demucs user'))[0][3]:
+    #     p = Payment()
+    #     p.get_token()
+    #     status = p.is_sub_active(
+    #         sqla.db_read(request.cookies.get('demucs user'))[0][3])
+    #     stat=status['status']
+    # else:
+    #     stat=None
 
-    return render_template('register.html')
+    return render_template('register.html', login=request.cookies.get('demucs user'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -121,19 +129,26 @@ def login():
                 res.set_cookie("demucs user", db_user[0][1], max_age=900)
                 return res
 
-        flash('Incorrect username or password')
+        flash('incorrect username or password')
     return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    '''logout user'''
+    res = make_response(redirect(url_for('login')))
+    res.set_cookie("demucs user", '', max_age=0)
+    flash('logged out')
+    return res
 
 @app.route("/upload", methods=['GET', 'POST'])
 def upload_file():
     '''main route'''
 
     if not request.cookies.get('demucs user'):
-        flash('Please login before file upload')
+        flash('please login')
         return redirect(url_for('login'))
 
     if not sqla.db_read(request.cookies.get('demucs user'))[0][3]:
-        flash('Please subscribe before file upload')
         return redirect(url_for('_subscribe'))
 
     p = Payment()
@@ -142,7 +157,7 @@ def upload_file():
         sqla.db_read(request.cookies.get('demucs user'))[0][3])
 
     if status['status'] != 'ACTIVE':
-        flash('Please reactivate subscription')
+        flash('please reactivate subscription')
         return redirect(url_for('_subscribe'))
 
     server_ip = request.host
@@ -219,7 +234,7 @@ def serve_zip(filename):
 @app.route('/help')
 def _help():
     return render_template('help.html',
-            login=request.cookies.get('demucs user'))
+            login=request.cookies.get('demucs user'),)
 
 @app.route('/license')
 def _license():
@@ -229,7 +244,7 @@ def _license():
 @app.route('/subscribe')
 def _subscribe():
     if not request.cookies.get('demucs user'):
-        flash('Please login before subscribing')
+        flash('please login before subscribing')
         return redirect(url_for('login'))
 
     p = Payment()
@@ -239,7 +254,10 @@ def _subscribe():
     client = os.getenv('P_CLIENT')
     src = f'https://www.paypal.com/sdk/js?client-id={client}&vault=true&intent=subscription'
 
-    return render_template('subscribe.html', pid=plan_id, src=src)
+    return render_template('subscribe.html',
+                pid=plan_id,
+                src=src,
+                login=request.cookies.get('demucs user'),)
 
 @app.route('/sub-id', methods=['POST'])
 def _save_sub_id():
@@ -251,6 +269,56 @@ def _save_sub_id():
 
         return redirect(url_for('upload_file'))
     return redirect(url_for('index'))
+
+@app.route('/forgot', methods=['GET', 'POST'])
+def forgot_password():
+    '''enter email for password reset link'''
+    if request.method == 'POST':
+        em = request.form['email']
+        db_user = sqla.db_read(em)
+        toke = Password.generate_toke()
+
+        if db_user:
+            sqla.db_passtoke(em, toke)
+
+
+            subject = 'Demucs-gui Password Reset'
+            body = f'Please go to \
+                    \n{request.host}/reset?u_token={toke}&u_em={em} \
+                    \nto reset the password.'
+
+            e = Email(em, f'Subject: {subject}\n\n{body}')
+            e.send()
+            flash(f'reset email sent to {em}')
+        else:
+            flash(f'no user with email {em}')
+    return render_template('forgot.html')
+
+@app.route('/reset', methods=['GET', 'POST'])
+def reset_password():
+    '''endpoint for password reset link'''
+    if not request.args.get('u_token'):
+        flash('select forgot password to reset password')
+        return redirect(url_for('login'))
+
+    if request.args.get('u_token') == \
+        sqla.db_read(request.args.get('u_em'))[0][4]:
+
+        if request.method == 'POST':
+            if request.form['password'] != request.form['first-pass']:
+                flash('passwords do not match')
+                return render_template('reset.html')
+
+            pwd = Password(request.form['password'])
+            sqla.db_update_pwd(request.args.get('u_em'), pwd.hashpw())
+            sqla.db_delete_token(request.args.get('u_em'))
+            flash('password updated')
+            return redirect(url_for('login'))
+
+        return render_template('reset.html')
+
+    flash('expired link - try forgot password again')
+    return render_template('reset.html')
 
 if __name__ == "__main__":
     app.run()

@@ -1,0 +1,8 @@
+<form method=post enctype=multipart/form-data>
+    <label class="label__email" for="first-pass">Create new password:</label>
+    <input type="password" id="first-pass" name="first-pass" required>
+    <label class="label__email" for="password">Confirm new password:</label>
+    <input type="password" id="password" name="password" pattern=".{6,}"
+        title="6 characters or more" required>
+    <input type=submit value=Submit>
+</form>
