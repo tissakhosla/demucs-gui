@@ -181,9 +181,51 @@ To                         Action      From
 61. Remove port 80 from AWS security Group
 1. Buy Certificate from GoDaddy and Download Zip File
 1. put key and crt in appropriate directories and adjust .conf file and nginx default file appropriately
-1. 
-1. `screen`
-1. screen 1 - `./listener.sh`
-1. screen 2 - `sudo journalctl -u demucs -f`
-1. screen 3 - `tail -F /var/log/nginx/error.log`
-1. screen 4 - `tail -F /var/log/nginx/access.log`
+
+# Production Notes
+## Paypal
+1. Changed base URL in pay.py to live
+1. Clicked Sandbox<>Live Slider on Paypal Developer Dashboard to live.
+1. Created a new app and got CLIENT_ID and CLIENT_SECRET
+### Locally
+1. Export Env vars
+1. In IDE, run Payment.create_product()
+```
+from pay import Payment
+p = Payment()
+p.get_token()
+p.create_product()
+p.create_billing()
+```
+1. `flask --app wsgi --debug run`
+1. Test payment flow, it works!
+
+## On EC2
+1. `sudo systemctl stop demucs`
+1. always back this up `demucs-gui/users.db`
+1. pull and checkout appropriate branch
+1. `. ~/envs/demucs/bin/activate`
+1. `python3 -m pip install -r demucs-gui/requirements.txt`
+1. `deactivate`
+1. `sudo vim /etc/systemd/system/demucs.service` - update as needed
+1. `sudo systemctl daemon-reload`
+1. screen
+1. screen 1 (listener): 
+```
+$ . ~/envs/demucs/bin/activate
+$ cd demucs-gui
+$ ./listener.sh
+```
+1. screen 2 (wsgi log): `$ sudo journalctl -u demucs -f`
+1. screen 3 (nginx error): `$ tail -F /var/log/nginx/error.log`
+1. screen 4 (nginx access): `$ tail -F /var/log/nginx/access.log`
+1. screen 5 (users): 
+```
+$ cd demucs-gui
+$ python3
+>>> import sqlite3
+>>> con = sqlite3.connect("users.db")
+>>> cur = con.cursor()
+>>> for row in cur.execute('SELECT * FROM users'):
+>>>     print(row)
+```
