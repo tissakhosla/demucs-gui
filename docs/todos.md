@@ -1,4 +1,5 @@
 ### Post Release Updates
+- create either sandbox branch or make user 'ACTIVE'
 - listener must get turned on when server starts.
 - does each user get a table with a log?
 - when "already subscribed", go to a different page

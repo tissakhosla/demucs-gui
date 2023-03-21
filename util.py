@@ -161,7 +161,7 @@ class Track:
 
         self.atts = attributes
         self.flags = None
-        self.filedir = f'./separated/{self.atts["dm"]}/{self.atts["cn"]}'
+        self.filedir = f'/home/ubuntu/separated/{self.atts["dm"]}/{self.atts["cn"]}'
         self.zip = None
 
     def demucs(self):
@@ -176,8 +176,8 @@ class Track:
             self.flags = f'-n {self.atts["dm"]} {self.atts["fp"]}'
 
     def giveprogress(self, logmsg):
-        '''log mesg every 5 seconds w status'''
-        time.sleep(5)
+        '''log mesg every 30 seconds w status'''
+        time.sleep(30)
         logging.info(' < %s: %s for %s', logmsg, self.atts['fn'], self.atts['ue'])
 
     def filenum(self, filecount):

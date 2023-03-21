@@ -135,6 +135,7 @@ class Payment:
 
         self.products = response
 
+    # UPDATE
     def get_sub_status(self, sid):
         '''get details regarding a subscription'''
 
