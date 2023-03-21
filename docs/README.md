@@ -214,7 +214,7 @@ p.create_billing()
 ```
 $ . ~/envs/demucs/bin/activate
 $ cd demucs-gui
-$ ./listener.sh
+$ ./listener.sh (must be chmod -x)
 ```
 1. screen 2 (wsgi log): `$ sudo journalctl -u demucs -f`
 1. screen 3 (nginx error): `$ tail -F /var/log/nginx/error.log`

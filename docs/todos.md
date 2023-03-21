@@ -1,6 +1,12 @@
 ### Post Release Updates
+- listener must get turned on when server starts.
+- does each user get a table with a log?
+- when "already subscribed", go to a different page
+- clean up log
 - storage!
-    - lets not log every 5 seconds - figure this out or we will disk full!
+    - cron rsync log files out
+    - cron delete log files
+    - keep record of all jobs in DB (or CSV and then rsync out)
     - upload completed files to S3 with [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
     - cron removal of uploaded tracks
     - cron removal of separated tracks

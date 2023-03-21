@@ -27,9 +27,6 @@ class Password:
             bytes(self.pwd, 'utf-8'),
             bcrypt.gensalt())
 
-    def generate_toke(self):
-        return secrets.token_urlsafe()
-
 class Email:
     '''handle emails'''
     def __init__(self, to, message):
@@ -105,7 +102,7 @@ class SqlAction:
             con.commit()
         finally:
             con.close()
-    
+
     def db_update_sub_stat(self, em, status):
         '''update user subscription status'''
         con = sqlite3.connect('users.db')

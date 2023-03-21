@@ -6,6 +6,7 @@ On success, we will send the user an email
 import os
 import logging
 import uuid
+import secrets
 from threading import Thread
 
 from flask import (
@@ -230,7 +231,7 @@ def serve_zip(filename):
 def _help():
     if request.cookies.get('demucs user'):
         substat = sqla.db_read(request.cookies.get('demucs user'))[0][4]
-    else: 
+    else:
         substat = None
     return render_template('help.html',
             login=request.cookies.get('demucs user'),
@@ -240,7 +241,7 @@ def _help():
 def _license():
     if request.cookies.get('demucs user'):
         substat = sqla.db_read(request.cookies.get('demucs user'))[0][4]
-    else: 
+    else:
         substat = None
     return render_template('license.html',
             login=request.cookies.get('demucs user'),
@@ -259,9 +260,9 @@ def _subscribe():
             flash('already subscribed!')
             print('yes')
             redirect(url_for('upload_file'))
-    else: 
+    else:
         substat = None
-    
+
     p = Payment()
     p.get_token()
     p.get_plans()
@@ -300,7 +301,7 @@ def forgot_password():
     if request.method == 'POST':
         em = request.form['email']
         db_user = sqla.db_read(em)
-        toke = Password.generate_toke()
+        toke = secrets.token_urlsafe()
 
         if db_user:
             sqla.db_passtoke(em, toke)
