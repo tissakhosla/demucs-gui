@@ -1,0 +1,25 @@
+<div class="drop-down models-help">
+    <div class="accordion-head">
+        <p>Models
+        <div class="down-arrow"></div>
+        </p>
+    </div>
+    <p>A model is the process by which demucs separates the tracks, including how the AI was trained.</p>
+    <ul dir="auto">
+        <li><code>htdemucs</code>: Default model.
+        </li>
+        <li><code>htdemucs_ft</code>: Fine-Tuned. 4x longer, but generally better results.</li>
+        <li><code>htdemucs_6s</code>: Additionally separates piano and guitar. Still in development.
+        </li>
+        <li><code>hdemucs_mmi</code>: Hybrid Demucs v3, retrained on MusDB + 800 songs.</li>
+        <li><code>mdx</code>: trained only on MusDB HQ, winning model on track A at the <a
+                href="https://www.aicrowd.com/challenges/music-demixing-challenge-ismir-2021" rel="nofollow">MDX</a>
+            challenge.</li>
+        <li><code>mdx_extra</code>: trained with extra training data (including MusDB test set), ranked 2nd on the track
+            B of the <a href="https://www.aicrowd.com/challenges/music-demixing-challenge-ismir-2021"
+                rel="nofollow">MDX</a>
+            challenge.</li>
+        <li><code>mdx_q</code>, <code>mdx_extra_q</code>: quantized version of the previous models. Smaller download and
+            storage but quality can be slightly worse.</li>
+    </ul>
+</div>

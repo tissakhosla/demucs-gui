@@ -6,39 +6,15 @@
     <p>Thank you for using demucs gui.</p>
     <p><a href="{{ url_for('register') }}">Register a new account</a>
         and <a href="{{ url_for('_subscribe') }}">subscribe</a> for $6/month,
-        or <a href="{{ url_for('login') }}">Login</a>.
-        Upload a wav or mp3 file, and select a model to split the tracks.</p>
-    <p>The program will split your track and in 3-8 minutes, based on the length of the track,
-        email results to the email you enter.
+        or <a href="{{ url_for('login') }}">Login</a> and upload a file.</p>
+    <p>The program will split your track into "piano, bass, drums, and other" in 3-8 minutes, based on the length of the
+        track, and email results to the email you enter.
     </p>
-    <p>Information on the models is listed below.
-    </p>
-    <ul dir="auto">
-        <li><code>htdemucs</code>: first version of Hybrid Transformer Demucs. Trained on MusDB + 800 songs. Default
-            model.
-        </li>
-        <li><code>htdemucs_ft</code>: fine-tuned version of <code>htdemucs</code>, separation will take 4 times more
-            time
-            but might be a bit better. Same training set as <code>htdemucs</code>.</li>
-        <li><code>htdemucs_6s</code>: 6 sources version of <code>htdemucs</code>, with <code>piano</code> and
-            <code>guitar</code> being added as sources.
-            Note that the <code>piano</code> source is not working great at the moment.
-        </li>
-        <li><code>hdemucs_mmi</code>: Hybrid Demucs v3, retrained on MusDB + 800 songs.</li>
-        <li><code>mdx</code>: trained only on MusDB HQ, winning model on track A at the <a
-                href="https://www.aicrowd.com/challenges/music-demixing-challenge-ismir-2021" rel="nofollow">MDX</a>
-            challenge.</li>
-        <li><code>mdx_extra</code>: trained with extra training data (including MusDB test set), ranked 2nd on the track
-            B
-            of the <a href="https://www.aicrowd.com/challenges/music-demixing-challenge-ismir-2021"
-                rel="nofollow">MDX</a>
-            challenge.</li>
-        <li><code>mdx_q</code>, <code>mdx_extra_q</code>: quantized version of the previous models. Smaller download and
-            storage
-            but quality can be slightly worse.</li>
-    </ul>
+    {% include 'cmp-help-filetype.html' %}
+    {% include 'cmp-help-models.html' %}
     <p>For documentation regarding demucs itself, see <a href="https://github.com/facebookresearch/demucs"
             target="_blank">the git repo.</a>
     </p>
 </div>
+<script src="{{ url_for('static', filename='drop-down.js') }}"></script>
 {% endblock %}

@@ -3,23 +3,11 @@
     <input type=file name=file required accept="audio/wav, audio/mp3"><br>
     <label class="label__email" for="email">Email files to:</label>
     <input type="email" id="email" name="email" required>
-
-    <p style="text-decoration: underline;">Select model:</p>
-    <div class="models">
-        {% for model in models: %}
-        <input type="radio" id="{{model}}" name="model" value="{{model}}">
-        <label for="{{model}}">{{model}}</label><br>
-        {% endfor %}
-    </div>
-    <p style="text-decoration: underline;">Select output format:</p>
-    <div class="outputs">
-        <input type="radio" id="wav" name="output" value="wav">
-        <label for="wav">wav</label><br>
-        <input type="radio" id="mp3" name="output" value="mp3">
-        <label for="mp3">mp3</label><br>
-    </div>
+    {% include 'cmp-form-advanced.html' %}
     <div class="upload-button">
         <input type=submit value=Upload>
     </div>
 </form>
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+<script src="{{ url_for('static', filename='upload.js') }}"></script>
+<script src="{{ url_for('static', filename='drop-down.js') }}"></script>

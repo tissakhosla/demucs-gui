@@ -1,0 +1,28 @@
+<div class="drop-down advanced-options">
+    <div class="accordion-head">
+        <p>Advanced Options
+        <div class="down-arrow"></div>
+        </p>
+    </div>
+    <p>See <a href="{{ url_for('_help') }}">Help</a> for more information.</p>
+    <div class="radios">
+        <div>
+            <p style="text-decoration: underline;">Select model:</p>
+            <div class="models">
+                {% for model in models: %}
+                <input type="radio" id="{{model}}" name="model" value="{{model}}">
+                <label for="{{model}}">{{model}}</label><br>
+                {% endfor %}
+            </div>
+        </div>
+        <div>
+            <p style="text-decoration: underline;">Select output format:</p>
+            <div class="outputs">
+                <input type="radio" id="wav" name="output" value="wav">
+                <label for="wav">wav</label><br>
+                <input type="radio" id="mp3" name="output" value="mp3">
+                <label for="mp3">mp3</label><br>
+            </div>
+        </div>
+    </div>
+</div>

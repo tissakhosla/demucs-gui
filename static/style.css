@@ -6,6 +6,11 @@
     --red: rgb(185, 35, 27);
 }
 
+input,
+.drop-down {
+    transition: all 0.5s ease;
+}
+
 html {
     height: 100vh;
     display: flex;
@@ -196,4 +201,48 @@ a:hover {
 
 .user-status span.no-sub {
     color: var(--red);
+}
+
+.drop-down {
+    height: 50px;
+    overflow: hidden;
+}
+
+.active.advanced-options {
+    height: 360px;
+}
+
+.active.filetype-help {
+    height: 200px;
+}
+
+.active.models-help {
+    height: 350px;
+}
+
+.radios {
+    display: flex;
+    justify-content: space-around;
+}
+
+.accordion-head {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    cursor: pointer;
+}
+
+.accordion-head>p {
+    text-decoration: underline;
+    /* padding: 15px 0; */
+}
+
+.down-arrow {
+    width: 10px;
+    height: 10px;
+    margin: 10px 50px;
+    transform: rotate(45deg);
+    border-bottom: 2px solid var(--blue);
+    border-right: 2px solid var(--blue);
 }
