@@ -6,11 +6,6 @@
     --red: rgb(185, 35, 27);
 }
 
-input,
-.drop-down {
-    transition: all 0.5s ease;
-}
-
 html {
     height: 100vh;
     display: flex;
@@ -145,6 +140,16 @@ input[type='radio'] {
     margin: 8px 0;
 }
 
+.help span {
+    background: rgb(130, 173, 82, .6);
+    padding: 2px 3px;
+    border-radius: 3px;
+}
+
+.help span code {
+    background: rgb(0, 0, 0, 0);
+}
+
 footer {
     display: flex;
     justify-content: space-between;
@@ -204,7 +209,11 @@ a:hover {
 }
 
 .drop-down {
-    height: 50px;
+    transition: all 0.5s ease;
+}
+
+.drop-down {
+    height: 0px;
     overflow: hidden;
 }
 
@@ -213,12 +222,29 @@ a:hover {
 }
 
 .active.filetype-help {
-    height: 200px;
+    height: 150px;
 }
 
 .active.models-help {
-    height: 350px;
+    height: 400px;
 }
+
+@media (max-width: 780px) {
+
+    .active.advanced-options {
+        height: 360px;
+    }
+
+    .active.filetype-help {
+        height: 200px;
+    }
+
+    .active.models-help {
+        height: 500px;
+    }
+
+}
+
 
 .radios {
     display: flex;
@@ -245,4 +271,15 @@ a:hover {
     transform: rotate(45deg);
     border-bottom: 2px solid var(--blue);
     border-right: 2px solid var(--blue);
+    transition: all .3s;
+}
+
+.active.down-arrow {
+    transform: rotate(-135deg);
+}
+
+hr {
+    height: 1px;
+    border: none;
+    background: var(--blue);
 }

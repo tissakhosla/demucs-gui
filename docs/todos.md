@@ -1,5 +1,7 @@
 ### Post Release Updates
+- cookie should update on every request so that we don't get logged out while using
 - create api command to generate ACTIVE test user
+- flac format input
 - update help link
 - listener must get turned on by hand :( when server starts.
 - does each user get a table with a log?
