@@ -17,9 +17,8 @@ from flask import (
 
 import bcrypt
 from werkzeug.utils import secure_filename
-from util import (Track, SqlAction,
-    User, Password, Email
-)
+from sqlctl import SqlAction
+from util import ( Track, User, Password, Email )
 
 from pay import Payment
 
