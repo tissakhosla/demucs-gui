@@ -42,17 +42,20 @@ class SqlAction:
                         (id INTEGER PRIMARY KEY AUTOINCREMENT, 
                         user TEXT NOT NULL,
                         action TEXT,
-                        time TIMESTAMP)'''
+                        time TIMESTAMP,
+                        file TEXT,
+                        ext TEXT,
+                        size FLOAT)'''
             cur.execute(sqlcmd)
             con.commit()
         finally:
             con.close()
 
-    def db_timestamp(self, un, act):
+    def db_timestamp(self, un, act, fn=None, ext=None, size=None):
         timestamp = datetime.now()
         sql_exec('users.db',
-                "INSERT INTO actions (user, action, time) VALUES (?, ?, ?)",
-                (un, act, timestamp.strftime('%Y-%m-%d %H:%M:%S')))
+                "INSERT INTO actions (user, action, time, file, ext, size) VALUES (?, ?, ?, ?, ?, ?)",
+                (un, act, timestamp.strftime('%Y-%m-%d %H:%M:%S'), fn, ext, size))
 
     def db_insert(self, user):
         '''insert a new user'''

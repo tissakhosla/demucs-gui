@@ -117,9 +117,12 @@ def register():
 def login():
     '''user login'''
     if request.cookies.get('demucs user'):
+        sqla.db_timestamp(request.cookies.get('demucs user'), 'returned')
         return redirect('/upload')
 
     if request.method == 'POST':
+        sqla.db_timestamp(request.form['email'], 'login attempt')
+
         net_pwd = bytes(request.form['password'], 'utf-8')
         db_user = sqla.db_read(request.form['email'])
 
@@ -136,6 +139,7 @@ def login():
 
                 res = make_response(redirect(url_for('upload_file')))
                 res.set_cookie("demucs user", db_user[0][1], max_age=900)
+                sqla.db_timestamp(db_user[0][1], 'login success')
                 return res
 
         flash('incorrect username or password')
@@ -144,6 +148,7 @@ def login():
 @app.route('/logout')
 def logout():
     '''logout user'''
+
     res = make_response(redirect(url_for('login')))
     res.set_cookie("demucs user", '', max_age=0)
     flash('logged out')
@@ -180,16 +185,20 @@ def upload_file():
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
+            filetype = file.content_type
+            filesize = len(file.read())
+            file.seek(0)
 
             logging.info(' < FILE: %s', filename)
-            logging.info(' < TYPE: %s', file.content_type)
-            logging.info(' < SIZE: %s bytes', len(file.read()))
-            file.seek(0)
+            logging.info(' < TYPE: %s', filetype)
+            logging.info(' < SIZE: %s bytes', filesize)
 
             # write file to FS
             codename = str(uuid.uuid4())
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], codename)
             file.save(filepath)
+            
+            sqla.db_timestamp(useremail, 'upload saved', filename, filetype, filesize)
 
             return redirect(url_for(
                 'success',
