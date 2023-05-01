@@ -18,7 +18,7 @@ from flask import (
 import bcrypt
 from werkzeug.utils import secure_filename
 from sqlctl import SqlAction
-from util import ( Track, User, Password, Email )
+from util import (Track, User, Password, Email)
 
 from pay import Payment
 
@@ -46,7 +46,8 @@ assert os.getenv('P_CLIENT')
 
 # initialize DB
 sqla = SqlAction("users.db")
-sqla.db_createTable()
+sqla.db_createUsersTable()
+sqla.db_createActionsTable()
 
 def allowed_file(filename):
     '''check filename safety'''
@@ -65,8 +66,15 @@ def process(a):
 @app.route("/")
 def index():
     '''check if user is logged in and subscribed'''
+
+    user_ip = request.environ['REMOTE_ADDR']
+    logging.info(' START: a wild user has appeared')
+    logging.info(' CLIENT: %s', user_ip)
+    sqla.db_timestamp(user_ip, 'new')
+
     if request.cookies.get('demucs user'):
         if sqla.db_read(request.cookies.get('demucs user'))[0][3]:
+            sqla.db_timestamp(request.cookies.get('demucs user'), 'returned')
             return redirect('/upload')
         return redirect(url_for('_subscribe'))
     return redirect(url_for('login'))
@@ -154,11 +162,8 @@ def upload_file():
         return redirect(url_for('_subscribe'))
 
     server_ip = request.host
-    user_ip = request.environ['REMOTE_ADDR']
 
-    logging.info(' START: a wild user has appeared')
     logging.info(' SERVER: %s', server_ip)
-    logging.info(' CLIENT: %s', user_ip)
 
     if request.method == 'POST':
 

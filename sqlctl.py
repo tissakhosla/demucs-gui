@@ -1,14 +1,24 @@
 '''handle sql actions'''
 import sqlite3
+from datetime import datetime
+
+def sql_exec(db, cmd, tup):
+    con = sqlite3.connect(db)
+    try:
+        cur = con.cursor()
+        cur.execute(cmd, tup)
+        con.commit()
+    finally:
+        con.close()
 
 class SqlAction:
     '''sql crud'''
-    def __init__(self, tbl):
-        self.tbl = tbl
+    def __init__(self, db):
+        self.db = db
 
-    def db_createTable(self):
+    def db_createUsersTable(self):
         '''create the initial table'''
-        con = sqlite3.connect(self.tbl)
+        con = sqlite3.connect(self.db)
         try:
             cur = con.cursor()
             sqlcmd = '''CREATE TABLE IF NOT EXISTS users
@@ -22,6 +32,27 @@ class SqlAction:
             con.commit()
         finally:
             con.close()
+
+    def db_createActionsTable(self):
+        '''create the initial table'''
+        con = sqlite3.connect(self.db)
+        try:
+            cur = con.cursor()
+            sqlcmd = '''CREATE TABLE IF NOT EXISTS actions
+                        (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                        user TEXT NOT NULL,
+                        action TEXT,
+                        time TIMESTAMP)'''
+            cur.execute(sqlcmd)
+            con.commit()
+        finally:
+            con.close()
+
+    def db_timestamp(self, un, act):
+        timestamp = datetime.now()
+        sql_exec('users.db',
+                "INSERT INTO actions (user, action, time) VALUES (?, ?, ?)",
+                (un, act, timestamp.strftime('%Y-%m-%d %H:%M:%S')))
 
     def db_insert(self, user):
         '''insert a new user'''
