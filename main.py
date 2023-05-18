@@ -38,7 +38,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SECRET_KEY'] = os.urandom(12)
 
 # confirm env
-assert os.path.exists(UPLOAD_FOLDER)
+assert os.path.exists(UPLOAD_FOLDER), f'{UPLOAD_FOLDER} does not exist'
 assert os.getenv('G_SMTP')
 assert os.getenv('G_MAIL')
 assert os.getenv('G_KEY')
@@ -63,14 +63,19 @@ def process(a):
     t.zippit()
     t.track_email()
 
+# @app.route("/")
+# def index():
+#     '''check if user is logged in and subscribed'''
+#     if request.cookies.get('demucs user'):
+#         if sqla.db_read(request.cookies.get('demucs user'))[0][3]:
+#             return redirect('/upload')
+#         return redirect(url_for('_subscribe'))
+#     return redirect(url_for('login'))
+
 @app.route("/")
 def index():
     '''check if user is logged in and subscribed'''
-    if request.cookies.get('demucs user'):
-        if sqla.db_read(request.cookies.get('demucs user'))[0][3]:
-            return redirect('/upload')
-        return redirect(url_for('_subscribe'))
-    return redirect(url_for('login'))
+    return redirect('/upload')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -146,13 +151,13 @@ def logout():
 def upload_file():
     '''main route'''
 
-    if not request.cookies.get('demucs user'):
-        flash('please login')
-        return redirect(url_for('login'))
+    # if not request.cookies.get('demucs user'):
+    #     flash('please login')
+    #     return redirect(url_for('login'))
 
-    if not sqla.db_read(request.cookies.get('demucs user'))[0][4]:
-        print("why")
-        return redirect(url_for('_subscribe'))
+    # if not sqla.db_read(request.cookies.get('demucs user'))[0][4]:
+    #     print("why")
+    #     return redirect(url_for('_subscribe'))
 
     server_ip = request.host
     user_ip = request.environ['REMOTE_ADDR']
@@ -199,8 +204,8 @@ def upload_file():
 
     return render_template('upload.html',
                         models=MODELS,
-                        login=request.cookies.get('demucs user'),
-                        substat=sqla.db_read(request.cookies.get('demucs user'))[0][4])
+                        login='freeuser@demucs.com',
+                        substat='FREE TRIAL')
 
 @app.route('/success')
 def success():
@@ -220,8 +225,8 @@ def success():
         'success.html',
         ue=atts['ue'],
         fn=atts['fn'],
-        login=request.cookies.get('demucs user'),
-        substat=sqla.db_read(request.cookies.get('demucs user'))[0][4])
+        login='freeuser@demucs.com',
+        substat='FREE TRIAL')
 
 @app.route('/zips/<path:filename>')
 def serve_zip(filename):
@@ -246,104 +251,6 @@ def _license():
     return render_template('license.html',
             login=request.cookies.get('demucs user'),
             substat=substat)
-
-@app.route('/subscribe')
-def _subscribe():
-    if not request.cookies.get('demucs user'):
-        flash('please login/register before subscribing')
-        return redirect(url_for('login'))
-
-    if request.cookies.get('demucs user'):
-        substat = sqla.db_read(request.cookies.get('demucs user'))[0][4]
-        print(substat)
-        if substat == 'ACTIVE':
-            flash('already subscribed!')
-            print('yes')
-            redirect(url_for('upload_file'))
-    else:
-        substat = None
-
-    p = Payment()
-    p.get_token()
-    p.get_plans()
-    plan_id = p.plans['plans'][0]['id']
-    client = os.getenv('P_CLIENT')
-    src = f'https://www.paypal.com/sdk/js?client-id={client}&vault=true&intent=subscription'
-
-    return render_template('subscribe.html',
-                pid=plan_id,
-                src=src,
-                login=request.cookies.get('demucs user'),
-                substat=substat)
-
-@app.route('/sub-id', methods=['POST'])
-def _save_sub():
-    if request.method == 'POST':
-        sqla.db_subscription(
-            request.cookies.get('demucs user'),
-            request.form['subscription_id']
-        )
-
-        p = Payment()
-        p.get_token()
-        stat = p.get_sub_status(
-            sqla.db_read(request.cookies.get('demucs user'))[0][3])
-        sqla.db_update_sub_stat(
-            request.cookies.get('demucs user'),
-            stat)
-
-        return redirect(url_for('upload_file'))
-    return redirect(url_for('index'))
-
-@app.route('/forgot', methods=['GET', 'POST'])
-def forgot_password():
-    '''enter email for password reset link'''
-    if request.method == 'POST':
-        em = request.form['email']
-        db_user = sqla.db_read(em)
-        toke = secrets.token_urlsafe()
-
-        if db_user:
-            sqla.db_passtoke(em, toke)
-
-
-            subject = 'Demucs-gui Password Reset'
-            body = f'Please go to \
-                    \n{request.host}/reset?u_token={toke}&u_em={em} \
-                    \nto reset the password.'
-
-            e = Email(em, f'Subject: {subject}\n\n{body}')
-            e.send()
-            flash(f'reset email sent to {em}')
-        else:
-            flash(f'no user with email {em}')
-    return render_template('forgot.html')
-
-@app.route('/reset', methods=['GET', 'POST'])
-def reset_password():
-    '''endpoint for password reset link'''
-    if not request.args.get('u_token'):
-        flash('select forgot password to reset password')
-        return redirect(url_for('login'))
-
-    if request.args.get('u_token') == \
-        sqla.db_read(request.args.get('u_em'))[0][5]:
-
-        if request.method == 'POST':
-            if request.form['password'] != request.form['first-pass']:
-                flash('passwords do not match')
-                return render_template('reset.html')
-
-            pwd = Password(request.form['password'])
-            sqla.db_update_pwd(request.args.get('u_em'), pwd.hashpw())
-            sqla.db_delete_token(request.args.get('u_em'))
-            flash('password updated')
-            return redirect(url_for('login'))
-
-        return render_template('reset.html')
-
-    flash('expired link - try forgot password again')
-    return render_template('reset.html')
 
 if __name__ == "__main__":
     app.run()

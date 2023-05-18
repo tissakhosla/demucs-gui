@@ -4,11 +4,9 @@
 {% block body %}
 <div class="help">
     <p>Thank you for using demucs gui.</p>
-    <p><a href="{{ url_for('register') }}">Register a new account</a>
-        and <a href="{{ url_for('_subscribe') }}">subscribe</a> for $6/month,
-        or <a href="{{ url_for('login') }}">Login</a> and upload a file.</p>
     <p>The program will split your track into "piano, bass, drums, and other" in 3-8 minutes, based on the length of the
-        track, and email results to the email you enter.
+        track, and email results to the email you enter. Use high quality uncompressed files.
+        No user data is stored.
     </p>
     <hr>
     {% include 'cmp-help-filetype.html' %}
