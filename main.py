@@ -247,6 +247,16 @@ def _license():
             login=request.cookies.get('demucs user'),
             substat=substat)
 
+@app.route('/samples')
+def _samples():
+    if request.cookies.get('demucs user'):
+        substat = sqla.db_read(request.cookies.get('demucs user'))[0][4]
+    else:
+        substat = None
+    return render_template('samples.html',
+            login=request.cookies.get('demucs user'),
+            substat=substat)
+
 @app.route('/subscribe')
 def _subscribe():
     if not request.cookies.get('demucs user'):
